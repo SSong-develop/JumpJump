@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jump Jump</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 게임 모드 선택 화면 -->
+    <div id="mode-select">
+        <h1>Jump Jump</h1>
+        <h2>게임 모드 선택</h2>
+        <div id="mode-options">
+            <div class="mode-card" data-mode="normal">
+                <div class="mode-icon">🎮</div>
+                <span class="mode-title">일반 모드</span>
+                <p class="mode-desc">제한 없이 자유롭게 플레이</p>
+            </div>
+            <div class="mode-card" data-mode="bet">
+                <div class="mode-icon">🎲</div>
+                <span class="mode-title">내기 모드</span>
+                <p class="mode-desc">제한된 점프 횟수로 도전</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 점프 횟수 설정 화면 (내기 모드) -->
+    <div id="bet-setup" style="display: none;">
+        <h1>Jump Jump</h1>
+        <h2>점프 횟수 설정</h2>
+        <div id="jump-count-setting">
+            <label for="jump-count">최대 점프 횟수:</label>
+            <div class="count-selector">
+                <button id="count-minus">-</button>
+                <input type="number" id="jump-count" value="10" min="1" max="100">
+                <button id="count-plus">+</button>
+            </div>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-count="5">5회</button>
+                <button class="preset-btn" data-count="10">10회</button>
+                <button class="preset-btn" data-count="20">20회</button>
+                <button class="preset-btn" data-count="50">50회</button>
+            </div>
+        </div>
+        <button id="confirm-jump-count">확인</button>
+    </div>
+
+    <!-- 캐릭터 선택 화면 -->
+    <div id="character-select" style="display: none;">
+        <h1>Jump Jump</h1>
+        <h2>캐릭터 선택</h2>
+        <div id="character-options">
+            <div class="character-card" data-character="skeleton">
+                <div class="character-preview skeleton-preview"></div>
+                <span>해골</span>
+            </div>
+            <div class="character-card" data-character="human">
+                <div class="character-preview human-preview"></div>
+                <span>인간</span>
+            </div>
+            <div class="character-card" data-character="dog">
+                <div class="character-preview dog-preview"></div>
+                <span>강아지</span>
+            </div>
+            <div class="character-card" data-character="cat">
+                <div class="character-preview cat-preview"></div>
+                <span>고양이</span>
+            </div>
+        </div>
+        <p class="select-hint">캐릭터를 클릭하여 선택하세요</p>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="game-container" style="display: none;">
+        <div id="ui">
+            <div id="height-display">높이: <span id="height">0</span>m</div>
+            <div id="jump-count-display" style="display: none;">점프: <span id="jumps-left">0</span>회 남음</div>
+            <div id="power-bar-container">
+                <div id="power-bar"></div>
+            </div>
+            <div id="power-label">점프 파워</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="instructions">
+            <p><strong>조작법</strong></p>
+            <p>← → : 방향 선택</p>
+            <p>스페이스바 누르기: 점프 충전</p>
+            <p>스페이스바 떼기: 점프!</p>
+        </div>
+    </div>
+
+    <!-- 결과 화면 (내기 모드) -->
+    <div id="result-screen" style="display: none;">
+        <h1>게임 종료!</h1>
+        <div id="result-content">
+            <p class="result-label">달성한 최대 높이</p>
+            <p class="result-height"><span id="final-height">0</span>m</p>
+            <p class="result-jumps">사용한 점프: <span id="total-jumps">0</span>회</p>
+        </div>
+        <button id="restart-btn">다시 하기</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
