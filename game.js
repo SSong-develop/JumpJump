@@ -268,99 +268,174 @@ function update() {
     document.getElementById('power-bar').style.width = (player.jumpPower / MAX_JUMP_POWER * 100) + '%';
 }
 
-// 해골 캐릭터 그리기
+// 해골 캐릭터 그리기 - Cybernetic Android
 function drawSkeleton(screenY) {
-    // 몸체 (뼈)
-    ctx.fillStyle = '#e0e0e0';
+    // 몸체 (메탈릭)
+    ctx.fillStyle = '#1a2a3a';
     ctx.fillRect(player.x + 8, screenY + 20, 14, 20);
+    // 몸체 회로 라인
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(player.x + 15, screenY + 22);
+    ctx.lineTo(player.x + 15, screenY + 38);
+    ctx.stroke();
 
-    // 머리 (해골)
-    ctx.fillStyle = '#ffffff';
+    // 머리 (로봇)
+    ctx.fillStyle = '#2a3a4a';
     ctx.beginPath();
     ctx.arc(player.x + player.width / 2, screenY + 12, 12, 0, Math.PI * 2);
     ctx.fill();
+    // 머리 테두리 글로우
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-    // 눈구멍
-    ctx.fillStyle = '#1a1a2e';
+    // 눈 (LED 글로우)
+    ctx.fillStyle = '#00ffff';
+    ctx.shadowColor = '#00ffff';
+    ctx.shadowBlur = 10;
     const eyeX = player.facingRight ? player.x + 17 : player.x + 8;
     ctx.beginPath();
-    ctx.arc(eyeX, screenY + 10, 4, 0, Math.PI * 2);
+    ctx.arc(eyeX, screenY + 10, 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(eyeX + 6, screenY + 10, 4, 0, Math.PI * 2);
+    ctx.arc(eyeX + 6, screenY + 10, 3, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
 
-    // 코
+    // 입 (디지털 라인)
+    ctx.strokeStyle = '#ff00ff';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(player.x + 15, screenY + 15);
-    ctx.lineTo(player.x + 13, screenY + 18);
-    ctx.lineTo(player.x + 17, screenY + 18);
-    ctx.fill();
+    ctx.moveTo(player.x + 11, screenY + 18);
+    ctx.lineTo(player.x + 19, screenY + 18);
+    ctx.stroke();
 
-    // 다리 뼈
-    ctx.fillStyle = '#e0e0e0';
+    // 다리 (메탈릭)
+    ctx.fillStyle = '#1a2a3a';
     ctx.fillRect(player.x + 8, screenY + 38, 5, 12);
     ctx.fillRect(player.x + 17, screenY + 38, 5, 12);
+    // 다리 회로
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(player.x + 10, screenY + 40);
+    ctx.lineTo(player.x + 10, screenY + 48);
+    ctx.moveTo(player.x + 20, screenY + 40);
+    ctx.lineTo(player.x + 20, screenY + 48);
+    ctx.stroke();
 }
 
-// 인간 캐릭터 그리기
+// 인간 캐릭터 그리기 - Cyberpunk Human
 function drawHuman(screenY) {
-    // 몸체
-    ctx.fillStyle = '#ff6b6b';
+    // 몸체 (사이버 자켓)
+    ctx.fillStyle = '#2a1a3a';
     ctx.fillRect(player.x, screenY + 15, player.width, 25);
+    // 네온 라인
+    ctx.strokeStyle = '#ff00ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(player.x + 2, screenY + 17);
+    ctx.lineTo(player.x + 2, screenY + 38);
+    ctx.moveTo(player.x + 28, screenY + 17);
+    ctx.lineTo(player.x + 28, screenY + 38);
+    ctx.stroke();
 
     // 얼굴
-    ctx.fillStyle = '#ffe66d';
+    ctx.fillStyle = '#c9b896';
     ctx.beginPath();
     ctx.arc(player.x + player.width / 2, screenY + 10, 10, 0, Math.PI * 2);
     ctx.fill();
 
-    // 머리카락
-    ctx.fillStyle = '#5a3825';
-    ctx.beginPath();
-    ctx.arc(player.x + player.width / 2, screenY + 5, 10, Math.PI, 0);
-    ctx.fill();
+    // 사이버 임플란트 (이마)
+    ctx.fillStyle = '#ff00ff';
+    ctx.shadowColor = '#ff00ff';
+    ctx.shadowBlur = 8;
+    ctx.fillRect(player.x + 10, screenY + 2, 10, 3);
+    ctx.shadowBlur = 0;
 
-    // 눈
-    ctx.fillStyle = '#333';
+    // 눈 (사이버 눈)
+    ctx.fillStyle = '#00ffff';
+    ctx.shadowColor = '#00ffff';
+    ctx.shadowBlur = 10;
     if (player.facingRight) {
-        ctx.fillRect(player.x + 17, screenY + 8, 4, 4);
+        ctx.fillRect(player.x + 17, screenY + 8, 5, 3);
     } else {
-        ctx.fillRect(player.x + 9, screenY + 8, 4, 4);
+        ctx.fillRect(player.x + 8, screenY + 8, 5, 3);
     }
+    ctx.shadowBlur = 0;
 
-    // 다리
-    ctx.fillStyle = '#4a69bd';
+    // 다리 (사이버 부츠)
+    ctx.fillStyle = '#1a1a2a';
     ctx.fillRect(player.x + 5, screenY + 38, 8, 12);
     ctx.fillRect(player.x + 17, screenY + 38, 8, 12);
+    // 부츠 네온
+    ctx.strokeStyle = '#ff00ff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(player.x + 9, screenY + 46);
+    ctx.lineTo(player.x + 9, screenY + 50);
+    ctx.moveTo(player.x + 21, screenY + 46);
+    ctx.lineTo(player.x + 21, screenY + 50);
+    ctx.stroke();
 }
 
-// 강아지 캐릭터 그리기
+// 강아지 캐릭터 그리기 - Cyber Dog
 function drawDog(screenY) {
-    // 몸체
-    ctx.fillStyle = '#c4a574';
+    // 몸체 (메탈릭)
+    ctx.fillStyle = '#1a3a2a';
     ctx.fillRect(player.x + 2, screenY + 18, 26, 16);
+    // 몸체 회로
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(player.x + 8, screenY + 22);
+    ctx.lineTo(player.x + 22, screenY + 22);
+    ctx.lineTo(player.x + 22, screenY + 30);
+    ctx.stroke();
 
     // 머리
-    ctx.fillStyle = '#c4a574';
+    ctx.fillStyle = '#2a4a3a';
     ctx.beginPath();
     ctx.arc(player.x + player.width / 2, screenY + 12, 12, 0, Math.PI * 2);
     ctx.fill();
+    // 머리 테두리
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-    // 귀
-    ctx.fillStyle = '#8b6914';
+    // 귀 (안테나)
+    ctx.fillStyle = '#1a3a2a';
     if (player.facingRight) {
         ctx.beginPath();
-        ctx.ellipse(player.x + 22, screenY + 3, 6, 10, 0.3, 0, Math.PI * 2);
+        ctx.ellipse(player.x + 22, screenY + 3, 4, 8, 0.3, 0, Math.PI * 2);
         ctx.fill();
+        // 안테나 팁 글로우
+        ctx.fillStyle = '#00ff88';
+        ctx.shadowColor = '#00ff88';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(player.x + 24, screenY - 3, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
     } else {
         ctx.beginPath();
-        ctx.ellipse(player.x + 8, screenY + 3, 6, 10, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(player.x + 8, screenY + 3, 4, 8, -0.3, 0, Math.PI * 2);
         ctx.fill();
+        ctx.fillStyle = '#00ff88';
+        ctx.shadowColor = '#00ff88';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(player.x + 6, screenY - 3, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
     }
 
-    // 눈
-    ctx.fillStyle = '#333';
+    // 눈 (LED)
+    ctx.fillStyle = '#00ff88';
+    ctx.shadowColor = '#00ff88';
+    ctx.shadowBlur = 10;
     if (player.facingRight) {
         ctx.beginPath();
         ctx.arc(player.x + 19, screenY + 10, 3, 0, Math.PI * 2);
@@ -370,41 +445,60 @@ function drawDog(screenY) {
         ctx.arc(player.x + 11, screenY + 10, 3, 0, Math.PI * 2);
         ctx.fill();
     }
+    ctx.shadowBlur = 0;
 
-    // 코
-    ctx.fillStyle = '#333';
+    // 코 (센서)
+    ctx.fillStyle = '#ff0044';
+    ctx.shadowColor = '#ff0044';
+    ctx.shadowBlur = 5;
     const noseX = player.facingRight ? player.x + 25 : player.x + 5;
     ctx.beginPath();
-    ctx.arc(noseX, screenY + 14, 3, 0, Math.PI * 2);
+    ctx.arc(noseX, screenY + 14, 2, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
 
-    // 다리
-    ctx.fillStyle = '#c4a574';
+    // 다리 (메탈릭)
+    ctx.fillStyle = '#1a3a2a';
     ctx.fillRect(player.x + 4, screenY + 32, 6, 12);
     ctx.fillRect(player.x + 20, screenY + 32, 6, 12);
 
-    // 꼬리
-    ctx.fillStyle = '#c4a574';
-    const tailX = player.facingRight ? player.x : player.x + 26;
+    // 꼬리 (안테나)
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 3;
+    const tailX = player.facingRight ? player.x : player.x + 30;
     ctx.beginPath();
-    ctx.ellipse(tailX, screenY + 22, 4, 8, player.facingRight ? -0.5 : 0.5, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(tailX, screenY + 22);
+    ctx.quadraticCurveTo(tailX + (player.facingRight ? -8 : 8), screenY + 15, tailX + (player.facingRight ? -5 : 5), screenY + 10);
+    ctx.stroke();
 }
 
-// 고양이 캐릭터 그리기
+// 고양이 캐릭터 그리기 - Neon Cat
 function drawCat(screenY) {
-    // 몸체
-    ctx.fillStyle = '#ff9a56';
+    // 몸체 (다크 메탈릭)
+    ctx.fillStyle = '#2a2a1a';
     ctx.fillRect(player.x + 3, screenY + 18, 24, 16);
+    // 네온 스트라이프
+    ctx.strokeStyle = '#ffaa00';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(player.x + 5, screenY + 20);
+    ctx.lineTo(player.x + 25, screenY + 20);
+    ctx.moveTo(player.x + 5, screenY + 28);
+    ctx.lineTo(player.x + 25, screenY + 28);
+    ctx.stroke();
 
     // 머리
-    ctx.fillStyle = '#ff9a56';
+    ctx.fillStyle = '#3a3a2a';
     ctx.beginPath();
     ctx.arc(player.x + player.width / 2, screenY + 12, 11, 0, Math.PI * 2);
     ctx.fill();
+    // 머리 테두리
+    ctx.strokeStyle = '#ffaa00';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-    // 귀 (삼각형)
-    ctx.fillStyle = '#ff9a56';
+    // 귀 (삼각형 - 네온)
+    ctx.fillStyle = '#3a3a2a';
     ctx.beginPath();
     ctx.moveTo(player.x + 6, screenY + 5);
     ctx.lineTo(player.x + 3, screenY - 5);
@@ -416,21 +510,26 @@ function drawCat(screenY) {
     ctx.lineTo(player.x + 18, screenY + 2);
     ctx.fill();
 
-    // 귀 안쪽 (핑크)
-    ctx.fillStyle = '#ffb6c1';
+    // 귀 안쪽 (네온 글로우)
+    ctx.fillStyle = '#ffaa00';
+    ctx.shadowColor = '#ffaa00';
+    ctx.shadowBlur = 5;
     ctx.beginPath();
     ctx.moveTo(player.x + 7, screenY + 3);
-    ctx.lineTo(player.x + 5, screenY - 2);
+    ctx.lineTo(player.x + 5, screenY - 1);
     ctx.lineTo(player.x + 10, screenY + 1);
     ctx.fill();
     ctx.beginPath();
     ctx.moveTo(player.x + 23, screenY + 3);
-    ctx.lineTo(player.x + 25, screenY - 2);
+    ctx.lineTo(player.x + 25, screenY - 1);
     ctx.lineTo(player.x + 20, screenY + 1);
     ctx.fill();
+    ctx.shadowBlur = 0;
 
-    // 눈
-    ctx.fillStyle = '#2ecc71';
+    // 눈 (홀로그래픽)
+    ctx.fillStyle = '#ffaa00';
+    ctx.shadowColor = '#ffaa00';
+    ctx.shadowBlur = 12;
     if (player.facingRight) {
         ctx.beginPath();
         ctx.ellipse(player.x + 18, screenY + 10, 4, 5, 0, 0, Math.PI * 2);
@@ -440,47 +539,60 @@ function drawCat(screenY) {
         ctx.ellipse(player.x + 12, screenY + 10, 4, 5, 0, 0, Math.PI * 2);
         ctx.fill();
     }
-    // 동공
-    ctx.fillStyle = '#333';
+    ctx.shadowBlur = 0;
+    // 동공 (수직 슬릿)
+    ctx.fillStyle = '#0a0a0a';
     if (player.facingRight) {
         ctx.beginPath();
-        ctx.ellipse(player.x + 19, screenY + 10, 2, 4, 0, 0, Math.PI * 2);
+        ctx.ellipse(player.x + 19, screenY + 10, 1, 4, 0, 0, Math.PI * 2);
         ctx.fill();
     } else {
         ctx.beginPath();
-        ctx.ellipse(player.x + 11, screenY + 10, 2, 4, 0, 0, Math.PI * 2);
+        ctx.ellipse(player.x + 11, screenY + 10, 1, 4, 0, 0, Math.PI * 2);
         ctx.fill();
     }
 
-    // 코
-    ctx.fillStyle = '#ffb6c1';
+    // 코 (LED)
+    ctx.fillStyle = '#ff0044';
+    ctx.shadowColor = '#ff0044';
+    ctx.shadowBlur = 8;
     ctx.beginPath();
     ctx.moveTo(player.x + 15, screenY + 14);
     ctx.lineTo(player.x + 13, screenY + 17);
     ctx.lineTo(player.x + 17, screenY + 17);
     ctx.fill();
+    ctx.shadowBlur = 0;
 
-    // 수염
-    ctx.strokeStyle = '#333';
+    // 수염 (레이저)
+    ctx.strokeStyle = '#00ffff';
+    ctx.shadowColor = '#00ffff';
+    ctx.shadowBlur = 5;
     ctx.lineWidth = 1;
     const whiskerX = player.facingRight ? player.x + 20 : player.x + 10;
     const whiskerDir = player.facingRight ? 1 : -1;
     ctx.beginPath();
     ctx.moveTo(whiskerX, screenY + 15);
-    ctx.lineTo(whiskerX + whiskerDir * 10, screenY + 13);
+    ctx.lineTo(whiskerX + whiskerDir * 12, screenY + 13);
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(whiskerX, screenY + 17);
-    ctx.lineTo(whiskerX + whiskerDir * 10, screenY + 17);
+    ctx.lineTo(whiskerX + whiskerDir * 12, screenY + 17);
     ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(whiskerX, screenY + 19);
+    ctx.lineTo(whiskerX + whiskerDir * 12, screenY + 21);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
 
-    // 다리
-    ctx.fillStyle = '#ff9a56';
+    // 다리 (메탈릭)
+    ctx.fillStyle = '#2a2a1a';
     ctx.fillRect(player.x + 5, screenY + 32, 6, 12);
     ctx.fillRect(player.x + 19, screenY + 32, 6, 12);
 
-    // 꼬리
-    ctx.strokeStyle = '#ff9a56';
+    // 꼬리 (네온)
+    ctx.strokeStyle = '#ffaa00';
+    ctx.shadowColor = '#ffaa00';
+    ctx.shadowBlur = 10;
     ctx.lineWidth = 4;
     ctx.lineCap = 'round';
     const tailStartX = player.facingRight ? player.x + 3 : player.x + 27;
@@ -491,6 +603,7 @@ function drawCat(screenY) {
         tailStartX + (player.facingRight ? -10 : 10), screenY + 5
     );
     ctx.stroke();
+    ctx.shadowBlur = 0;
 }
 
 // 플레이어 그리기 (화면 좌표로 변환)
@@ -516,17 +629,28 @@ function drawPlayer() {
             break;
     }
 
-    // 충전 중 표시
+    // 충전 중 표시 (사이버네틱 차지 링)
     if (player.isCharging && player.isOnGround) {
-        ctx.strokeStyle = '#ffd700';
+        ctx.strokeStyle = '#00ffff';
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 15;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(player.x + player.width / 2, screenY - 10, 8 + player.jumpPower / 3, 0, Math.PI * 2);
         ctx.stroke();
+        // 외부 링
+        ctx.strokeStyle = '#ff00ff';
+        ctx.shadowColor = '#ff00ff';
+        ctx.beginPath();
+        ctx.arc(player.x + player.width / 2, screenY - 10, 12 + player.jumpPower / 2, 0, (player.jumpPower / MAX_JUMP_POWER) * Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
 
-        // 방향 화살표
+        // 방향 화살표 (홀로그래픽)
         if (player.direction !== 0) {
-            ctx.fillStyle = '#ffd700';
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 10;
             ctx.beginPath();
             const arrowX = player.x + player.width / 2 + player.direction * 25;
             const arrowY = screenY + player.height / 2;
@@ -534,80 +658,152 @@ function drawPlayer() {
             ctx.lineTo(arrowX + player.direction * 15, arrowY);
             ctx.lineTo(arrowX, arrowY + 10);
             ctx.fill();
+            ctx.shadowBlur = 0;
         }
     }
 
     ctx.restore();
 }
 
-// 블록 그리기
+// 블록 그리기 - Cybernetic Platforms
 function drawBlocks() {
     for (const block of blocks) {
         const screenY = block.y + cameraY;
 
         // 화면에 보이는 블록만 그리기
         if (screenY > -50 && screenY < canvas.height + 50) {
-            // 블록 그림자
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-            ctx.fillRect(block.x + 3, screenY + 3, block.width, block.height);
+            // 블록 글로우 쉐도우
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 15;
 
-            // 블록 본체
+            // 블록 본체 (다크 메탈릭)
             const gradient = ctx.createLinearGradient(block.x, screenY, block.x, screenY + block.height);
-            gradient.addColorStop(0, '#5a6e4a');
-            gradient.addColorStop(1, '#3d4a32');
+            gradient.addColorStop(0, '#1a2a3a');
+            gradient.addColorStop(1, '#0a1a2a');
             ctx.fillStyle = gradient;
             ctx.fillRect(block.x, screenY, block.width, block.height);
+            ctx.shadowBlur = 0;
 
-            // 블록 테두리
-            ctx.strokeStyle = '#7a8e6a';
+            // 블록 테두리 (네온)
+            ctx.strokeStyle = '#00ffff';
             ctx.lineWidth = 2;
             ctx.strokeRect(block.x, screenY, block.width, block.height);
 
-            // 풀 효과
-            ctx.fillStyle = '#6a8e5a';
-            for (let i = 0; i < 5; i++) {
-                const grassX = block.x + 10 + i * 15;
-                ctx.beginPath();
-                ctx.moveTo(grassX, screenY);
-                ctx.lineTo(grassX - 3, screenY - 8);
-                ctx.lineTo(grassX + 3, screenY - 8);
-                ctx.fill();
-            }
+            // 회로 패턴
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(block.x + 5, screenY + block.height / 2);
+            ctx.lineTo(block.x + 20, screenY + block.height / 2);
+            ctx.lineTo(block.x + 25, screenY + 5);
+            ctx.lineTo(block.x + 40, screenY + 5);
+            ctx.moveTo(block.x + 45, screenY + block.height / 2);
+            ctx.lineTo(block.x + 60, screenY + block.height / 2);
+            ctx.lineTo(block.x + 65, screenY + block.height - 5);
+            ctx.lineTo(block.x + 75, screenY + block.height - 5);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            // 인디케이터 도트
+            ctx.fillStyle = '#ff00ff';
+            ctx.shadowColor = '#ff00ff';
+            ctx.shadowBlur = 5;
+            ctx.beginPath();
+            ctx.arc(block.x + 10, screenY + block.height / 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(block.x + block.width - 10, screenY + block.height / 2, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
         }
     }
 }
 
-// 바닥 그리기 (화면 좌표로 변환)
+// 바닥 그리기 - Cybernetic Grid Floor
 function drawFloor() {
     const floorScreenY = floor.y + cameraY;
 
     if (floorScreenY < canvas.height + floor.height && floorScreenY > -floor.height) {
         const gradient = ctx.createLinearGradient(0, floorScreenY, 0, floorScreenY + floor.height);
-        gradient.addColorStop(0, '#4a5a3a');
-        gradient.addColorStop(1, '#2a3a2a');
+        gradient.addColorStop(0, '#0a1520');
+        gradient.addColorStop(1, '#050a10');
         ctx.fillStyle = gradient;
         ctx.fillRect(floor.x, floorScreenY, floor.width, floor.height);
 
-        // 바닥 패턴
-        ctx.fillStyle = '#5a6a4a';
-        for (let i = 0; i < canvas.width; i += 30) {
-            ctx.fillRect(i, floorScreenY, 15, 5);
+        // 그리드 라인
+        ctx.strokeStyle = '#00ffff';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.3;
+        for (let i = 0; i < canvas.width; i += 25) {
+            ctx.beginPath();
+            ctx.moveTo(i, floorScreenY);
+            ctx.lineTo(i, floorScreenY + floor.height);
+            ctx.stroke();
         }
+        ctx.globalAlpha = 1;
+
+        // 상단 네온 라인
+        ctx.strokeStyle = '#00ffff';
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 10;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, floorScreenY);
+        ctx.lineTo(canvas.width, floorScreenY);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
     }
 }
 
-// 배경 그리기
+// 배경 그리기 - Cybernetic Matrix
 function drawBackground() {
-    // 별 배경
-    ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 50; i++) {
+    // 수직 그리드 라인 (원근법)
+    ctx.strokeStyle = '#00ffff';
+    ctx.globalAlpha = 0.1;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < canvas.width; i += 50) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // 파티클/데이터 스트림
+    for (let i = 0; i < 60; i++) {
         const x = (i * 73) % canvas.width;
-        const y = ((i * 137 + cameraY * 0.1) % (canvas.height + 200)) - 100;
+        const y = ((i * 137 + cameraY * 0.15) % (canvas.height + 200)) - 100;
         const size = (i % 3) + 1;
+
+        // 색상 변화
+        if (i % 4 === 0) {
+            ctx.fillStyle = '#ff00ff';
+            ctx.shadowColor = '#ff00ff';
+        } else if (i % 3 === 0) {
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowColor = '#00ffff';
+        } else {
+            ctx.fillStyle = '#0088aa';
+            ctx.shadowColor = '#0088aa';
+        }
+        ctx.shadowBlur = 5;
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fill();
     }
+    ctx.shadowBlur = 0;
+
+    // 수평 스캔 라인 효과
+    ctx.strokeStyle = '#00ffff';
+    ctx.globalAlpha = 0.03;
+    for (let i = 0; i < canvas.height; i += 4) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvas.width, i);
+        ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
 }
 
 // 게임 렌더링
@@ -627,11 +823,14 @@ function render() {
     // 플레이어
     drawPlayer();
 
-    // 최고 높이 표시
-    ctx.fillStyle = '#ffd700';
+    // 최고 높이 표시 (네온 HUD)
+    ctx.fillStyle = '#00ffff';
+    ctx.shadowColor = '#00ffff';
+    ctx.shadowBlur = 10;
     ctx.font = 'bold 16px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText(`최고: ${maxHeight}m`, canvas.width - 10, 30);
+    ctx.fillText(`MAX: ${maxHeight}m`, canvas.width - 10, 30);
+    ctx.shadowBlur = 0;
 }
 
 // 점프 카운트 UI 업데이트
