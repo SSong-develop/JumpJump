@@ -75,19 +75,33 @@ function generateBlocks() {
         height: BLOCK_HEIGHT
     });
 
-    // 랜덤 블록 생성 (위로 올라가면서)
+    // 블록 생성 (위로 올라가면서) - 도달 가능한 위치에 배치
     let lastY = WORLD_FLOOR_Y - 100;
     let lastX = canvas.width / 2 - BLOCK_WIDTH / 2;
 
+    // 최대 점프 높이 계산: v^2 / (2*g) = 18^2 / (2*0.5) = 324
+    // 안전 마진을 두고 최대 높이 간격 설정
+    const maxJumpHeight = (MAX_JUMP_POWER * MAX_JUMP_POWER) / (2 * GRAVITY);
+    const safeVerticalGap = maxJumpHeight * 0.4; // 안전하게 40%만 사용 (약 130)
+
+    // 최대 점프 거리 계산 (수평): 수평속도 * 체공시간
+    // 체공시간 = 2 * v / g = 2 * 18 / 0.5 = 72 프레임
+    // 수평거리 = 5 * (18/18) * 72 * 0.99^36 ≈ 250 (공기저항 고려)
+    const maxJumpDistance = HORIZONTAL_SPEED * (2 * MAX_JUMP_POWER / GRAVITY) * 0.5;
+    const safeHorizontalGap = maxJumpDistance * 0.6; // 안전하게 60%만 사용
+
     for (let i = 0; i < 100; i++) {
-        // 점프 가능한 거리 내에서 랜덤 높이 (최대 1층 거리)
-        const minGap = 80;
-        const maxGap = 150; // 최대 점프력으로 도달 가능한 거리
+        // 수직 간격: 고정 범위 내에서 설정 (점프로 도달 가능한 범위)
+        const minGap = 60;
+        const maxGap = Math.min(120, safeVerticalGap); // 최대 120 또는 안전 높이
         const yGap = minGap + Math.random() * (maxGap - minGap);
 
-        // 수평 위치 랜덤 (점프 가능 범위 내)
-        const maxHorizontalMove = 180;
-        let newX = lastX + (Math.random() - 0.5) * maxHorizontalMove * 2;
+        // 수평 위치: 이전 블록 기준으로 도달 가능한 범위 내에서만 배치
+        // 수직 간격에 따라 수평 이동 거리 조절 (높이 올라갈수록 수평 거리 제한)
+        const heightRatio = yGap / maxGap;
+        const allowedHorizontalMove = safeHorizontalGap * (1 - heightRatio * 0.5);
+
+        let newX = lastX + (Math.random() - 0.5) * allowedHorizontalMove * 2;
 
         // 화면 경계 체크
         newX = Math.max(20, Math.min(canvas.width - BLOCK_WIDTH - 20, newX));
@@ -117,6 +131,7 @@ function checkCollision(rect1, rect2) {
 // 플레이어가 블록 위에 착지하는지 체크 (월드 좌표계)
 function checkLanding() {
     const playerBottom = player.y + player.height;
+    const prevPlayerBottom = player.y + player.height - player.velocityY;
 
     // 바닥 체크
     if (playerBottom >= floor.y && player.velocityY >= 0) {
@@ -128,12 +143,15 @@ function checkLanding() {
 
     // 블록 체크 (월드 좌표 기준)
     for (const block of blocks) {
-        if (player.velocityY >= 0 && // 떨어지는 중
-            playerBottom >= block.y &&
-            playerBottom <= block.y + block.height + player.velocityY &&
-            player.x + player.width > block.x &&
-            player.x < block.x + block.width) {
+        // 수평으로 블록과 겹치는지 확인
+        const horizontalOverlap = player.x + player.width > block.x && player.x < block.x + block.width;
 
+        if (!horizontalOverlap) continue;
+
+        // 떨어지는 중 착지 체크 (이전 프레임에서 블록 위에 있었고, 현재 블록을 통과했거나 블록 위에 있는 경우)
+        if (player.velocityY >= 0 &&
+            prevPlayerBottom <= block.y &&
+            playerBottom >= block.y) {
             player.y = block.y - player.height;
             player.velocityY = 0;
             player.isOnGround = true;
