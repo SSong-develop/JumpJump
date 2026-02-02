@@ -255,6 +255,19 @@ function update() {
         player.velocityY += GRAVITY;
     }
 
+    // 공중에서 방향키 제어 (약간의 움직임)
+    if (!player.isOnGround) {
+        const airControlForce = 0.8; // 공중 제어 가능한 힘
+        if (keys.left) {
+            player.velocityX = Math.max(player.velocityX - airControlForce, -HORIZONTAL_SPEED * 1.2);
+            player.facingRight = false;
+        }
+        if (keys.right) {
+            player.velocityX = Math.min(player.velocityX + airControlForce, HORIZONTAL_SPEED * 1.2);
+            player.facingRight = true;
+        }
+    }
+
     // 위치 업데이트
     player.x += player.velocityX;
     player.y += player.velocityY;
@@ -868,12 +881,66 @@ function checkGameEnd() {
     }
 }
 
+// 랭킹 데이터 저장
+function saveToRanking(height, jumps) {
+    let rankings = JSON.parse(localStorage.getItem('jumpJumpRankings')) || [];
+    
+    const record = {
+        height: height,
+        jumps: jumps,
+        timestamp: new Date().toLocaleString('ko-KR'),
+        mode: gameMode,
+        character: selectedCharacter
+    };
+    
+    rankings.push(record);
+    // 높이 순으로 정렬
+    rankings.sort((a, b) => b.height - a.height);
+    // 상위 50개만 유지
+    rankings = rankings.slice(0, 50);
+    
+    localStorage.setItem('jumpJumpRankings', JSON.stringify(rankings));
+}
+
+// 랭킹 UI 업데이트
+function updateRankingUI() {
+    let rankings = JSON.parse(localStorage.getItem('jumpJumpRankings')) || [];
+    const rankingList = document.getElementById('ranking-list');
+    
+    if (!rankingList) return;
+    
+    rankingList.innerHTML = '';
+    
+    if (rankings.length === 0) {
+        rankingList.innerHTML = '<p style="text-align: center; color: #888;">랭킹 기록이 없습니다.</p>';
+        return;
+    }
+    
+    rankings.slice(0, 10).forEach((record, index) => {
+        const rankItem = document.createElement('div');
+        rankItem.className = 'rank-item';
+        rankItem.innerHTML = `
+            <span class="rank-number">${index + 1}</span>
+            <span class="rank-height">${record.height}m</span>
+            <span class="rank-info">${record.character} | ${record.mode === 'bet' ? record.jumps + '회' : '무제한'}</span>
+            <span class="rank-date">${record.timestamp}</span>
+        `;
+        rankingList.appendChild(rankItem);
+    });
+}
+
 // 결과 화면 표시
 function showResult() {
     document.getElementById('game-container').style.display = 'none';
     document.getElementById('result-screen').style.display = 'block';
     document.getElementById('final-height').textContent = maxHeight;
     document.getElementById('total-jumps').textContent = currentJumps;
+    
+    // 랭킹에 저장
+    saveToRanking(maxHeight, currentJumps);
+    
+    // 랭킹 UI 업데이트
+    updateRankingUI();
 }
 
 // 게임 리셋
@@ -920,6 +987,11 @@ document.addEventListener('keydown', (e) => {
             player.isCharging = true;
             player.jumpPower = 0;
         }
+    }
+    // ESC 키로 게임 종료
+    if (e.code === 'Escape' && gameStarted && !gameEnded) {
+        gameEnded = true;
+        showResult();
     }
     e.preventDefault();
 });
@@ -1003,6 +1075,52 @@ document.getElementById('restart-btn').addEventListener('click', () => {
     document.getElementById('jump-count-display').style.display = 'none';
     resetGame();
 });
+
+// 랭킹 보기 버튼
+document.getElementById('view-ranking-btn').addEventListener('click', () => {
+    document.getElementById('mode-select').style.display = 'none';
+    document.getElementById('ranking-view').style.display = 'block';
+    showFullRanking();
+});
+
+// 랭킹 돌아가기 버튼
+document.getElementById('ranking-back-btn').addEventListener('click', () => {
+    document.getElementById('ranking-view').style.display = 'none';
+    document.getElementById('mode-select').style.display = 'block';
+});
+
+// 종료 버튼
+document.getElementById('quit-btn').addEventListener('click', () => {
+    if (gameStarted && !gameEnded) {
+        gameEnded = true;
+        showResult();
+    }
+});
+
+// 전체 랭킹 표시
+function showFullRanking() {
+    let rankings = JSON.parse(localStorage.getItem('jumpJumpRankings')) || [];
+    const rankingViewList = document.getElementById('ranking-view-list');
+    
+    rankingViewList.innerHTML = '';
+    
+    if (rankings.length === 0) {
+        rankingViewList.innerHTML = '<p style="text-align: center; color: #888; padding: 40px;">아직 기록이 없습니다.<br>게임을 플레이해보세요!</p>';
+        return;
+    }
+    
+    rankings.forEach((record, index) => {
+        const rankItem = document.createElement('div');
+        rankItem.className = 'rank-item';
+        rankItem.innerHTML = `
+            <span class="rank-number">${index + 1}</span>
+            <span class="rank-height">${record.height}m</span>
+            <span class="rank-info">${record.character} | ${record.mode === 'bet' ? record.jumps + '회' : '무제한'}</span>
+            <span class="rank-date">${record.timestamp}</span>
+        `;
+        rankingViewList.appendChild(rankItem);
+    });
+}
 
 // 게임 시작 함수
 function startGame() {
