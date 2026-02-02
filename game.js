@@ -45,6 +45,62 @@ const player = {
 let cameraY = 0;
 let maxHeight = 0;
 
+// 테마 시스템 (100m마다 변경)
+let currentTheme = 0; // 0: normal, 1: scary1, 2: scary2, 3: scary3
+
+// 테마별 색상 정의
+const themes = {
+    normal: {
+        blockColor1: '#1a2a3a',
+        blockColor2: '#0a1a2a',
+        blockBorder: '#00ffff',
+        blockDot: '#ff00ff',
+        backgroundColor: '#00ffff',
+        particleColors: ['#ff00ff', '#00ffff', '#0088aa'],
+        backgroundOpacity: 0.1,
+        name: 'normal'
+    },
+    scary1: {
+        blockColor1: '#2a1a2a',
+        blockColor2: '#1a0a1a',
+        blockBorder: '#ff6699',
+        blockDot: '#ff3366',
+        backgroundColor: '#ff6699',
+        particleColors: ['#ff3366', '#ff6699', '#aa0033'],
+        backgroundOpacity: 0.15,
+        name: 'scary1'
+    },
+    scary2: {
+        blockColor1: '#3a1a1a',
+        blockColor2: '#2a0a0a',
+        blockBorder: '#ff3333',
+        blockDot: '#ff0000',
+        backgroundColor: '#ff3333',
+        particleColors: ['#ff0000', '#ff6666', '#cc0000'],
+        backgroundOpacity: 0.2,
+        name: 'scary2'
+    },
+    scary3: {
+        blockColor1: '#4a0a0a',
+        blockColor2: '#2a0000',
+        blockBorder: '#ff0000',
+        blockDot: '#ff0033',
+        backgroundColor: '#ff0000',
+        particleColors: ['#ff0033', '#ff3366', '#990000'],
+        backgroundOpacity: 0.25,
+        name: 'scary3'
+    }
+};
+
+// 현재 테마 가져오기
+function getCurrentTheme() {
+    const themeIndex = Math.floor(maxHeight / 100);
+    if (themeIndex <= 0) return themes.normal;
+    if (themeIndex === 1) return themes.scary1;
+    if (themeIndex === 2) return themes.scary2;
+    return themes.scary3;
+}
+
 // 블록 배열
 let blocks = [];
 
@@ -301,6 +357,9 @@ function update() {
 
 // 해골 캐릭터 그리기 - Cybernetic Android
 function drawSkeleton(screenY) {
+    const theme = getCurrentTheme();
+    const scareLevel = Math.floor(maxHeight / 100); // 0, 1, 2, 3+
+    
     // 몸체 (메탈릭)
     ctx.fillStyle = '#1a2a3a';
     ctx.fillRect(player.x + 8, screenY + 20, 14, 20);
@@ -322,25 +381,68 @@ function drawSkeleton(screenY) {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 눈 (LED 글로우)
-    ctx.fillStyle = '#00ffff';
+    // 눈 (LED 글로우) - 공포도에 따라 변함
     ctx.shadowColor = '#00ffff';
     ctx.shadowBlur = 10;
     const eyeX = player.facingRight ? player.x + 17 : player.x + 8;
-    ctx.beginPath();
-    ctx.arc(eyeX, screenY + 10, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(eyeX + 6, screenY + 10, 3, 0, Math.PI * 2);
-    ctx.fill();
+    
+    if (scareLevel === 0) {
+        // 정상
+        ctx.fillStyle = '#00ffff';
+        ctx.beginPath();
+        ctx.arc(eyeX, screenY + 10, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(eyeX + 6, screenY + 10, 3, 0, Math.PI * 2);
+        ctx.fill();
+    } else if (scareLevel === 1) {
+        // 약간 무서워함
+        ctx.fillStyle = '#ffaa00';
+        ctx.beginPath();
+        ctx.arc(eyeX, screenY + 9, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(eyeX + 6, screenY + 9, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+    } else if (scareLevel === 2) {
+        // 매우 무서워함
+        ctx.fillStyle = '#ff6666';
+        ctx.beginPath();
+        ctx.arc(eyeX, screenY + 8, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(eyeX + 6, screenY + 8, 4, 0, Math.PI * 2);
+        ctx.fill();
+    } else {
+        // 극도로 무서워함
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(eyeX, screenY + 7, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(eyeX + 6, screenY + 7, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
     ctx.shadowBlur = 0;
 
-    // 입 (디지털 라인)
+    // 입 (디지털 라인) - 공포도에 따라 변함
     ctx.strokeStyle = '#ff00ff';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(player.x + 11, screenY + 18);
-    ctx.lineTo(player.x + 19, screenY + 18);
+    if (scareLevel === 0) {
+        // 웃음
+        ctx.moveTo(player.x + 11, screenY + 18);
+        ctx.lineTo(player.x + 19, screenY + 18);
+    } else if (scareLevel <= 2) {
+        // 입벌림
+        ctx.moveTo(player.x + 12, screenY + 16);
+        ctx.lineTo(player.x + 18, screenY + 20);
+        ctx.moveTo(player.x + 18, screenY + 16);
+        ctx.lineTo(player.x + 12, screenY + 20);
+    } else {
+        // 절규
+        ctx.arc(player.x + 15, screenY + 18, 3, 0, Math.PI * 2);
+    }
     ctx.stroke();
 
     // 다리 (메탈릭)
@@ -360,6 +462,8 @@ function drawSkeleton(screenY) {
 
 // 인간 캐릭터 그리기 - Cyberpunk Human
 function drawHuman(screenY) {
+    const scareLevel = Math.floor(maxHeight / 100);
+    
     // 몸체 (사이버 자켓)
     ctx.fillStyle = '#2a1a3a';
     ctx.fillRect(player.x, screenY + 15, player.width, 25);
@@ -379,23 +483,100 @@ function drawHuman(screenY) {
     ctx.arc(player.x + player.width / 2, screenY + 10, 10, 0, Math.PI * 2);
     ctx.fill();
 
-    // 사이버 임플란트 (이마)
-    ctx.fillStyle = '#ff00ff';
-    ctx.shadowColor = '#ff00ff';
-    ctx.shadowBlur = 8;
-    ctx.fillRect(player.x + 10, screenY + 2, 10, 3);
-    ctx.shadowBlur = 0;
-
-    // 눈 (사이버 눈)
-    ctx.fillStyle = '#00ffff';
-    ctx.shadowColor = '#00ffff';
-    ctx.shadowBlur = 10;
-    if (player.facingRight) {
-        ctx.fillRect(player.x + 17, screenY + 8, 5, 3);
+    // 사이버 임플란트 (이마) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.fillStyle = '#ff00ff';
+        ctx.shadowColor = '#ff00ff';
+        ctx.shadowBlur = 8;
+        ctx.fillRect(player.x + 10, screenY + 2, 10, 3);
+    } else if (scareLevel === 1) {
+        ctx.fillStyle = '#ffaa00';
+        ctx.shadowColor = '#ffaa00';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(player.x + 9, screenY + 1, 12, 4);
+    } else if (scareLevel === 2) {
+        ctx.fillStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+        ctx.shadowBlur = 12;
+        ctx.fillRect(player.x + 8, screenY + 0, 14, 5);
     } else {
-        ctx.fillRect(player.x + 8, screenY + 8, 5, 3);
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 15;
+        ctx.fillRect(player.x + 7, screenY - 1, 16, 6);
     }
     ctx.shadowBlur = 0;
+
+    // 눈 (사이버 눈) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.fillStyle = '#00ffff';
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 10;
+        if (player.facingRight) {
+            ctx.fillRect(player.x + 17, screenY + 8, 5, 3);
+        } else {
+            ctx.fillRect(player.x + 8, screenY + 8, 5, 3);
+        }
+    } else if (scareLevel === 1) {
+        ctx.fillStyle = '#ffaa00';
+        ctx.shadowColor = '#ffaa00';
+        ctx.shadowBlur = 12;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 19, screenY + 9, 3, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 11, screenY + 9, 3, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else if (scareLevel === 2) {
+        ctx.fillStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+        ctx.shadowBlur = 14;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 19, screenY + 9, 4, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 11, screenY + 9, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else {
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 16;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 19, screenY + 8, 5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 11, screenY + 8, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+    ctx.shadowBlur = 0;
+
+    // 입 - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.strokeStyle = '#c9b896';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(player.x + player.width / 2, screenY + 14, 2, 0, Math.PI, false);
+        ctx.stroke();
+    } else if (scareLevel <= 2) {
+        ctx.fillStyle = '#ff0044';
+        ctx.beginPath();
+        ctx.ellipse(player.x + player.width / 2, screenY + 15, 3, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+    } else {
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.ellipse(player.x + player.width / 2, screenY + 15, 4, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
 
     // 다리 (사이버 부츠)
     ctx.fillStyle = '#1a1a2a';
@@ -414,6 +595,8 @@ function drawHuman(screenY) {
 
 // 강아지 캐릭터 그리기 - Cyber Dog
 function drawDog(screenY) {
+    const scareLevel = Math.floor(maxHeight / 100);
+    
     // 몸체 (메탈릭)
     ctx.fillStyle = '#1a3a2a';
     ctx.fillRect(player.x + 2, screenY + 18, 26, 16);
@@ -442,9 +625,20 @@ function drawDog(screenY) {
         ctx.beginPath();
         ctx.ellipse(player.x + 22, screenY + 3, 4, 8, 0.3, 0, Math.PI * 2);
         ctx.fill();
-        // 안테나 팁 글로우
-        ctx.fillStyle = '#00ff88';
-        ctx.shadowColor = '#00ff88';
+        // 안테나 팁 글로우 - 공포도에 따라 변함
+        if (scareLevel === 0) {
+            ctx.fillStyle = '#00ff88';
+            ctx.shadowColor = '#00ff88';
+        } else if (scareLevel === 1) {
+            ctx.fillStyle = '#ffaa00';
+            ctx.shadowColor = '#ffaa00';
+        } else if (scareLevel === 2) {
+            ctx.fillStyle = '#ff6666';
+            ctx.shadowColor = '#ff6666';
+        } else {
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff0000';
+        }
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(player.x + 24, screenY - 3, 2, 0, Math.PI * 2);
@@ -454,8 +648,19 @@ function drawDog(screenY) {
         ctx.beginPath();
         ctx.ellipse(player.x + 8, screenY + 3, 4, 8, -0.3, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#00ff88';
-        ctx.shadowColor = '#00ff88';
+        if (scareLevel === 0) {
+            ctx.fillStyle = '#00ff88';
+            ctx.shadowColor = '#00ff88';
+        } else if (scareLevel === 1) {
+            ctx.fillStyle = '#ffaa00';
+            ctx.shadowColor = '#ffaa00';
+        } else if (scareLevel === 2) {
+            ctx.fillStyle = '#ff6666';
+            ctx.shadowColor = '#ff6666';
+        } else {
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff0000';
+        }
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(player.x + 6, screenY - 3, 2, 0, Math.PI * 2);
@@ -463,25 +668,76 @@ function drawDog(screenY) {
         ctx.shadowBlur = 0;
     }
 
-    // 눈 (LED)
-    ctx.fillStyle = '#00ff88';
-    ctx.shadowColor = '#00ff88';
-    ctx.shadowBlur = 10;
-    if (player.facingRight) {
-        ctx.beginPath();
-        ctx.arc(player.x + 19, screenY + 10, 3, 0, Math.PI * 2);
-        ctx.fill();
+    // 눈 (LED) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.fillStyle = '#00ff88';
+        ctx.shadowColor = '#00ff88';
+        ctx.shadowBlur = 10;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 19, screenY + 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 11, screenY + 10, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else if (scareLevel === 1) {
+        ctx.fillStyle = '#ffaa00';
+        ctx.shadowColor = '#ffaa00';
+        ctx.shadowBlur = 12;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 19, screenY + 9, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 11, screenY + 9, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else if (scareLevel === 2) {
+        ctx.fillStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+        ctx.shadowBlur = 14;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 19, screenY + 8, 4, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 11, screenY + 8, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
     } else {
-        ctx.beginPath();
-        ctx.arc(player.x + 11, screenY + 10, 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 16;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 19, screenY + 7, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 11, screenY + 7, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
     ctx.shadowBlur = 0;
 
-    // 코 (센서)
-    ctx.fillStyle = '#ff0044';
-    ctx.shadowColor = '#ff0044';
-    ctx.shadowBlur = 5;
+    // 코 (센서) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.fillStyle = '#ff0044';
+        ctx.shadowColor = '#ff0044';
+        ctx.shadowBlur = 5;
+    } else if (scareLevel <= 2) {
+        ctx.fillStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+        ctx.shadowBlur = 8;
+    } else {
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 10;
+    }
     const noseX = player.facingRight ? player.x + 25 : player.x + 5;
     ctx.beginPath();
     ctx.arc(noseX, screenY + 14, 2, 0, Math.PI * 2);
@@ -493,23 +749,34 @@ function drawDog(screenY) {
     ctx.fillRect(player.x + 4, screenY + 32, 6, 12);
     ctx.fillRect(player.x + 20, screenY + 32, 6, 12);
 
-    // 꼬리 (안테나)
+    // 꼬리 (안테나) - 공포도에 따라 움직임
     ctx.strokeStyle = '#00ff88';
     ctx.lineWidth = 3;
     const tailX = player.facingRight ? player.x : player.x + 30;
+    const tailBend = scareLevel * 2; // 공포할수록 더 움직임
     ctx.beginPath();
     ctx.moveTo(tailX, screenY + 22);
-    ctx.quadraticCurveTo(tailX + (player.facingRight ? -8 : 8), screenY + 15, tailX + (player.facingRight ? -5 : 5), screenY + 10);
+    ctx.quadraticCurveTo(tailX + (player.facingRight ? -8 - tailBend : 8 + tailBend), screenY + 15, tailX + (player.facingRight ? -5 - tailBend : 5 + tailBend), screenY + 10);
     ctx.stroke();
 }
 
 // 고양이 캐릭터 그리기 - Neon Cat
 function drawCat(screenY) {
+    const scareLevel = Math.floor(maxHeight / 100);
+    
     // 몸체 (다크 메탈릭)
     ctx.fillStyle = '#2a2a1a';
     ctx.fillRect(player.x + 3, screenY + 18, 24, 16);
-    // 네온 스트라이프
-    ctx.strokeStyle = '#ffaa00';
+    // 네온 스트라이프 - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.strokeStyle = '#ffaa00';
+    } else if (scareLevel === 1) {
+        ctx.strokeStyle = '#ffaa44';
+    } else if (scareLevel === 2) {
+        ctx.strokeStyle = '#ff6666';
+    } else {
+        ctx.strokeStyle = '#ff0000';
+    }
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(player.x + 5, screenY + 20);
@@ -523,8 +790,16 @@ function drawCat(screenY) {
     ctx.beginPath();
     ctx.arc(player.x + player.width / 2, screenY + 12, 11, 0, Math.PI * 2);
     ctx.fill();
-    // 머리 테두리
-    ctx.strokeStyle = '#ffaa00';
+    // 머리 테두리 - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.strokeStyle = '#ffaa00';
+    } else if (scareLevel === 1) {
+        ctx.strokeStyle = '#ffaa44';
+    } else if (scareLevel === 2) {
+        ctx.strokeStyle = '#ff6666';
+    } else {
+        ctx.strokeStyle = '#ff0000';
+    }
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -541,9 +816,20 @@ function drawCat(screenY) {
     ctx.lineTo(player.x + 18, screenY + 2);
     ctx.fill();
 
-    // 귀 안쪽 (네온 글로우)
-    ctx.fillStyle = '#ffaa00';
-    ctx.shadowColor = '#ffaa00';
+    // 귀 안쪽 (네온 글로우) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.fillStyle = '#ffaa00';
+        ctx.shadowColor = '#ffaa00';
+    } else if (scareLevel === 1) {
+        ctx.fillStyle = '#ffaa44';
+        ctx.shadowColor = '#ffaa44';
+    } else if (scareLevel === 2) {
+        ctx.fillStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+    } else {
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+    }
     ctx.shadowBlur = 5;
     ctx.beginPath();
     ctx.moveTo(player.x + 7, screenY + 3);
@@ -557,36 +843,110 @@ function drawCat(screenY) {
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // 눈 (홀로그래픽)
-    ctx.fillStyle = '#ffaa00';
-    ctx.shadowColor = '#ffaa00';
-    ctx.shadowBlur = 12;
-    if (player.facingRight) {
-        ctx.beginPath();
-        ctx.ellipse(player.x + 18, screenY + 10, 4, 5, 0, 0, Math.PI * 2);
-        ctx.fill();
+    // 눈 (홀로그래픽) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.fillStyle = '#ffaa00';
+        ctx.shadowColor = '#ffaa00';
+        ctx.shadowBlur = 12;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 18, screenY + 10, 4, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 12, screenY + 10, 4, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else if (scareLevel === 1) {
+        ctx.fillStyle = '#ffaa44';
+        ctx.shadowColor = '#ffaa44';
+        ctx.shadowBlur = 14;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 18, screenY + 9, 4.5, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 12, screenY + 9, 4.5, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else if (scareLevel === 2) {
+        ctx.fillStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+        ctx.shadowBlur = 16;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 18, screenY + 8, 5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 12, screenY + 8, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
     } else {
-        ctx.beginPath();
-        ctx.ellipse(player.x + 12, screenY + 10, 4, 5, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 18;
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 18, screenY + 7, 5.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 12, screenY + 7, 5.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
     ctx.shadowBlur = 0;
-    // 동공 (수직 슬릿)
+    
+    // 동공 (수직 슬릿) - 공포도에 따라 변함
     ctx.fillStyle = '#0a0a0a';
-    if (player.facingRight) {
-        ctx.beginPath();
-        ctx.ellipse(player.x + 19, screenY + 10, 1, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
+    if (scareLevel === 0) {
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 19, screenY + 10, 1, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 11, screenY + 10, 1, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else if (scareLevel <= 2) {
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 19, screenY + 9, 1.5, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.ellipse(player.x + 11, screenY + 9, 1.5, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
     } else {
-        ctx.beginPath();
-        ctx.ellipse(player.x + 11, screenY + 10, 1, 4, 0, 0, Math.PI * 2);
-        ctx.fill();
+        if (player.facingRight) {
+            ctx.beginPath();
+            ctx.arc(player.x + 18, screenY + 7, 2, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.beginPath();
+            ctx.arc(player.x + 12, screenY + 7, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
-    // 코 (LED)
-    ctx.fillStyle = '#ff0044';
-    ctx.shadowColor = '#ff0044';
-    ctx.shadowBlur = 8;
+    // 코 (LED) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.fillStyle = '#ff0044';
+        ctx.shadowColor = '#ff0044';
+        ctx.shadowBlur = 8;
+    } else if (scareLevel <= 2) {
+        ctx.fillStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+        ctx.shadowBlur = 10;
+    } else {
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 12;
+    }
     ctx.beginPath();
     ctx.moveTo(player.x + 15, screenY + 14);
     ctx.lineTo(player.x + 13, screenY + 17);
@@ -594,9 +954,20 @@ function drawCat(screenY) {
     ctx.fill();
     ctx.shadowBlur = 0;
 
-    // 수염 (레이저)
-    ctx.strokeStyle = '#00ffff';
-    ctx.shadowColor = '#00ffff';
+    // 수염 (레이저) - 공포도에 따라 변함
+    if (scareLevel === 0) {
+        ctx.strokeStyle = '#00ffff';
+        ctx.shadowColor = '#00ffff';
+    } else if (scareLevel === 1) {
+        ctx.strokeStyle = '#ffaa00';
+        ctx.shadowColor = '#ffaa00';
+    } else if (scareLevel === 2) {
+        ctx.strokeStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+    } else {
+        ctx.strokeStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+    }
     ctx.shadowBlur = 5;
     ctx.lineWidth = 1;
     const whiskerX = player.facingRight ? player.x + 20 : player.x + 10;
@@ -620,18 +991,30 @@ function drawCat(screenY) {
     ctx.fillRect(player.x + 5, screenY + 32, 6, 12);
     ctx.fillRect(player.x + 19, screenY + 32, 6, 12);
 
-    // 꼬리 (네온)
-    ctx.strokeStyle = '#ffaa00';
-    ctx.shadowColor = '#ffaa00';
+    // 꼬리 (네온) - 공포도에 따라 움직임
+    if (scareLevel === 0) {
+        ctx.strokeStyle = '#ffaa00';
+        ctx.shadowColor = '#ffaa00';
+    } else if (scareLevel === 1) {
+        ctx.strokeStyle = '#ffaa44';
+        ctx.shadowColor = '#ffaa44';
+    } else if (scareLevel === 2) {
+        ctx.strokeStyle = '#ff6666';
+        ctx.shadowColor = '#ff6666';
+    } else {
+        ctx.strokeStyle = '#ff0000';
+        ctx.shadowColor = '#ff0000';
+    }
     ctx.shadowBlur = 10;
     ctx.lineWidth = 4;
     ctx.lineCap = 'round';
     const tailStartX = player.facingRight ? player.x + 3 : player.x + 27;
+    const tailBend = scareLevel * 3; // 공포할수록 더 움직임
     ctx.beginPath();
     ctx.moveTo(tailStartX, screenY + 25);
     ctx.quadraticCurveTo(
-        tailStartX + (player.facingRight ? -15 : 15), screenY + 15,
-        tailStartX + (player.facingRight ? -10 : 10), screenY + 5
+        tailStartX + (player.facingRight ? -15 - tailBend : 15 + tailBend), screenY + 15,
+        tailStartX + (player.facingRight ? -10 - tailBend : 10 + tailBend), screenY + 5
     );
     ctx.stroke();
     ctx.shadowBlur = 0;
@@ -698,30 +1081,32 @@ function drawPlayer() {
 
 // 블록 그리기 - Cybernetic Platforms
 function drawBlocks() {
+    const theme = getCurrentTheme();
+    
     for (const block of blocks) {
         const screenY = block.y + cameraY;
 
         // 화면에 보이는 블록만 그리기
         if (screenY > -50 && screenY < canvas.height + 50) {
             // 블록 글로우 쉐도우
-            ctx.shadowColor = '#00ffff';
+            ctx.shadowColor = theme.blockBorder;
             ctx.shadowBlur = 15;
 
             // 블록 본체 (다크 메탈릭)
             const gradient = ctx.createLinearGradient(block.x, screenY, block.x, screenY + block.height);
-            gradient.addColorStop(0, '#1a2a3a');
-            gradient.addColorStop(1, '#0a1a2a');
+            gradient.addColorStop(0, theme.blockColor1);
+            gradient.addColorStop(1, theme.blockColor2);
             ctx.fillStyle = gradient;
             ctx.fillRect(block.x, screenY, block.width, block.height);
             ctx.shadowBlur = 0;
 
             // 블록 테두리 (네온)
-            ctx.strokeStyle = '#00ffff';
+            ctx.strokeStyle = theme.blockBorder;
             ctx.lineWidth = 2;
             ctx.strokeRect(block.x, screenY, block.width, block.height);
 
             // 회로 패턴
-            ctx.strokeStyle = '#00ffff';
+            ctx.strokeStyle = theme.blockBorder;
             ctx.lineWidth = 1;
             ctx.globalAlpha = 0.5;
             ctx.beginPath();
@@ -737,8 +1122,8 @@ function drawBlocks() {
             ctx.globalAlpha = 1;
 
             // 인디케이터 도트
-            ctx.fillStyle = '#ff00ff';
-            ctx.shadowColor = '#ff00ff';
+            ctx.fillStyle = theme.blockDot;
+            ctx.shadowColor = theme.blockDot;
             ctx.shadowBlur = 5;
             ctx.beginPath();
             ctx.arc(block.x + 10, screenY + block.height / 2, 2, 0, Math.PI * 2);
@@ -789,9 +1174,11 @@ function drawFloor() {
 
 // 배경 그리기 - Cybernetic Matrix
 function drawBackground() {
+    const theme = getCurrentTheme();
+    
     // 수직 그리드 라인 (원근법)
-    ctx.strokeStyle = '#00ffff';
-    ctx.globalAlpha = 0.1;
+    ctx.strokeStyle = theme.backgroundColor;
+    ctx.globalAlpha = theme.backgroundOpacity;
     ctx.lineWidth = 1;
     for (let i = 0; i < canvas.width; i += 50) {
         ctx.beginPath();
@@ -807,17 +1194,10 @@ function drawBackground() {
         const y = ((i * 137 + cameraY * 0.15) % (canvas.height + 200)) - 100;
         const size = (i % 3) + 1;
 
-        // 색상 변화
-        if (i % 4 === 0) {
-            ctx.fillStyle = '#ff00ff';
-            ctx.shadowColor = '#ff00ff';
-        } else if (i % 3 === 0) {
-            ctx.fillStyle = '#00ffff';
-            ctx.shadowColor = '#00ffff';
-        } else {
-            ctx.fillStyle = '#0088aa';
-            ctx.shadowColor = '#0088aa';
-        }
+        // 테마별 색상 변화
+        const colors = theme.particleColors;
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.shadowColor = colors[i % colors.length];
         ctx.shadowBlur = 5;
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -826,7 +1206,7 @@ function drawBackground() {
     ctx.shadowBlur = 0;
 
     // 수평 스캔 라인 효과
-    ctx.strokeStyle = '#00ffff';
+    ctx.strokeStyle = theme.backgroundColor;
     ctx.globalAlpha = 0.03;
     for (let i = 0; i < canvas.height; i += 4) {
         ctx.beginPath();
