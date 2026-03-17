@@ -484,24 +484,18 @@ void main() {
     }
 
     /**
-     * Capture frame from Canvas 2D
+     * Capture frame from Canvas 2D - optimized to avoid expensive getImageData
      */
     captureFrame(canvas2d) {
         if (!this.initialized || !this.gl) return false;
 
         try {
             const gl = this.gl;
-            const ctx = canvas2d.getContext('2d');
 
-            if (!ctx) return false;
-
-            // Get image data from Canvas 2D
-            const imageData = ctx.getImageData(0, 0, canvas2d.width, canvas2d.height);
-
-            // Upload to texture
+            // Performance optimization: Use direct canvas as texture source
+            // instead of calling getImageData which forces GPU-to-CPU readback
             gl.bindTexture(gl.TEXTURE_2D, this.textures.source);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas2d.width, canvas2d.height, 0,
-                gl.RGBA, gl.UNSIGNED_BYTE, imageData.data);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas2d);
 
             gl.bindTexture(gl.TEXTURE_2D, null);
 
@@ -724,6 +718,13 @@ const postProcessor = {
     init(gameCanvas, postProcessCanvas) {
         this._pipeline = new PostProcessPipeline();
         return this._pipeline.init(gameCanvas, postProcessCanvas);
+    },
+
+    captureFrame(canvas2d) {
+        if (this._pipeline) {
+            return this._pipeline.captureFrame(canvas2d);
+        }
+        return false;
     },
 
     processFrame(options) {

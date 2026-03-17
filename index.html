@@ -148,6 +148,21 @@
             </div>
             <div id="power-label">점프 파워</div>
             <button id="quit-btn">종료 (ESC)</button>
+            <!-- 진행률 바 -->
+            <div id="progress-container">
+                <div id="progress-track">
+                    <div id="progress-fill"></div>
+                    <div id="progress-player-dot"></div>
+                    <!-- 체크포인트 마커들 -->
+                    <div class="cp-marker" style="bottom:16.7%"></div>
+                    <div class="cp-marker" style="bottom:33.3%"></div>
+                    <div class="cp-marker" style="bottom:50%"></div>
+                    <div class="cp-marker" style="bottom:66.7%"></div>
+                    <div class="cp-marker" style="bottom:83.3%"></div>
+                </div>
+                <div id="progress-label">0m</div>
+                <div id="progress-goal">600m</div>
+            </div>
         </div>
         <canvas id="gameCanvas"></canvas>
         <canvas id="postProcessCanvas"></canvas>
@@ -157,6 +172,13 @@
             <p>스페이스바 누르기: 점프 충전</p>
             <p>스페이스바 떼기: 점프!</p>
             <p>ESC: 게임 종료</p>
+        </div>
+
+        <!-- 모바일 터치 컨트롤 -->
+        <div id="touch-controls">
+            <button id="touch-left"  class="touch-btn touch-dir">◀</button>
+            <button id="touch-jump"  class="touch-btn touch-jump-btn">JUMP</button>
+            <button id="touch-right" class="touch-btn touch-dir">▶</button>
         </div>
     </div>
 
@@ -186,6 +208,12 @@
         <button id="ranking-back-btn" class="ranking-back-btn">돌아가기</button>
     </div>
 
+    <script src="config.js"></script>
+    <script src="audio.js"></script>
+    <script src="entities.js"></script>
+    <script src="physics.js"></script>
+    <script src="renderer.js"></script>
+    <script src="ui.js"></script>
     <script src="postprocess.js"></script>
     <script src="game.js"></script>
 </body>

@@ -33,12 +33,15 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    width: 500px;
-    height: 700px;
+    /* 너비/높이는 JS resizeCanvas() 에서 동적으로 설정됨 */
     border: 2px solid #4a7878;
     border-radius: 4px;
     pointer-events: none;
     z-index: 5;
+}
+
+#gameCanvas {
+    display: block; /* 인라인 간격 제거 */
 }
 
 #ui {
@@ -1008,4 +1011,138 @@ body {
     background: #4a7878;
     color: #0a0a12;
     box-shadow: 0 0 20px rgba(74, 120, 120, 0.5);
+}
+
+/* ===== 진행률 바 HUD ===== */
+#progress-container {
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 10;
+}
+
+#progress-track {
+    width: 8px;
+    height: 200px;
+    background: rgba(0, 20, 30, 0.7);
+    border: 1px solid #2a4848;
+    border-radius: 4px;
+    position: relative;
+    overflow: visible;
+}
+
+#progress-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, #4a7878, #6a4a5a);
+    border-radius: 4px;
+    transition: height 0.3s ease;
+    min-height: 4px;
+}
+
+#progress-player-dot {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border: 2px solid #4a7878;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #4a7878;
+    transition: bottom 0.3s ease;
+    z-index: 2;
+}
+
+.cp-marker {
+    position: absolute;
+    left: -3px;
+    width: 14px;
+    height: 2px;
+    background: #6a4a5a;
+    border-radius: 1px;
+    box-shadow: 0 0 4px #6a4a5a;
+}
+
+#progress-label, #progress-goal {
+    font-size: 9px;
+    color: #4a7878;
+    font-family: monospace;
+    letter-spacing: 1px;
+    text-shadow: 0 0 4px #4a7878;
+}
+#progress-goal { color: #6a4a5a; }
+
+/* ===== 모바일 터치 컨트롤 ===== */
+#touch-controls {
+    display: none; /* 기본: 숨김 — @media (pointer: coarse) 에서 flex로 변경 */
+    position: absolute;
+    bottom: 14px;
+    left: 0;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+    z-index: 20;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.touch-btn {
+    pointer-events: all;
+    background: rgba(74,120,120,0.25);
+    border: 2px solid #4a7878;
+    border-radius: 12px;
+    color: #aadddd;
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    cursor: pointer;
+    transition: background 0.1s;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.touch-btn:active,
+.touch-btn.pressed {
+    background: rgba(74,120,120,0.7);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(74,120,120,0.8);
+}
+
+.touch-dir {
+    width: 70px;
+    height: 70px;
+}
+
+.touch-jump-btn {
+    flex: 1;
+    height: 70px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    border-color: #6a9898;
+    color: #cceeee;
+}
+
+/* 터치 디바이스에서만 표시 */
+@media (pointer: coarse) {
+    #touch-controls {
+        display: flex !important;
+    }
+    #instructions {
+        display: none;
+    }
 }
