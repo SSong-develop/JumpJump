@@ -1146,3 +1146,479 @@ body {
         display: none;
     }
 }
+
+/* ===== 대결 모드 스타일 ===== */
+
+/* 대결 설정 화면 */
+#battle-setup, #battle-host, #battle-guest, #battle-character-select {
+    text-align: center;
+    color: white;
+}
+
+#battle-setup h1, #battle-host h1, #battle-guest h1, #battle-character-select h1 {
+    font-size: 48px;
+    color: #4a7878;
+    text-shadow: 0 0 20px #4a7878, 0 0 40px #4a7878, 0 0 60px #0088aa;
+    margin-bottom: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+#battle-setup h2, #battle-host h2, #battle-guest h2, #battle-character-select h2 {
+    font-size: 24px;
+    color: #5a8a9a;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+}
+
+#battle-setup-content, #battle-host-content, #battle-guest-content {
+    max-width: 500px;
+    margin: 0 auto 30px;
+}
+
+#battle-target-setting {
+    background: rgba(74, 120, 120, 0.05);
+    border: 1px solid #4a7878;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+#battle-target-setting label {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #4a7878;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#target-height {
+    width: 100px;
+    height: 50px;
+    font-size: 24px;
+    text-align: center;
+    border: 1px solid #4a7878;
+    border-radius: 4px;
+    background: rgba(0, 20, 30, 0.8);
+    color: #4a7878;
+    text-shadow: 0 0 10px #4a7878;
+}
+
+#target-height:focus {
+    outline: none;
+    border-color: #6a4a5a;
+    box-shadow: 0 0 20px rgba(106, 74, 90, 0.5);
+}
+
+.target-preset-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border: 1px solid #4a7878;
+    border-radius: 4px;
+    background: transparent;
+    color: #5a8a9a;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.target-preset-btn:hover {
+    border-color: #6a4a5a;
+    color: #6a4a5a;
+    box-shadow: 0 0 15px rgba(106, 74, 90, 0.3);
+}
+
+/* 역할 선택 버튼 */
+#battle-role-select {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.battle-role-btn {
+    background: rgba(74, 120, 120, 0.05);
+    border: 2px solid #4a7878;
+    border-radius: 8px;
+    padding: 25px 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: white;
+}
+
+.battle-role-btn:hover {
+    transform: translateY(-5px);
+    border-color: #6a4a5a;
+    box-shadow: 0 0 30px rgba(106, 74, 90, 0.4);
+}
+
+.role-icon {
+    font-size: 36px;
+}
+
+.role-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #4a7878;
+}
+
+.role-desc {
+    font-size: 12px;
+    color: #5a8a9a;
+}
+
+/* 대결 단계별 UI */
+.battle-step {
+    background: rgba(74, 120, 120, 0.05);
+    border: 1px solid rgba(74, 120, 120, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.step-label {
+    font-size: 14px;
+    color: #5a8a9a;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.battle-step textarea {
+    width: 100%;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 11px;
+    background: rgba(0, 20, 30, 0.8);
+    border: 1px solid #4a7878;
+    border-radius: 4px;
+    color: #4a7878;
+    resize: none;
+    margin-bottom: 10px;
+    word-break: break-all;
+}
+
+.battle-step textarea:focus {
+    outline: none;
+    border-color: #6a4a5a;
+    box-shadow: 0 0 15px rgba(106, 74, 90, 0.3);
+}
+
+.battle-action-btn {
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #4a7878, #0088aa);
+    color: #0a0a12;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px rgba(74, 120, 120, 0.5);
+}
+
+.battle-action-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(74, 120, 120, 0.8);
+    background: linear-gradient(135deg, #6a4a5a, #aa0088);
+}
+
+/* 로딩 스피너 */
+.battle-loading {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(74, 120, 120, 0.2);
+    border-top-color: #4a7878;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-spinner.connected {
+    border-color: rgba(74, 240, 120, 0.2);
+    border-top-color: #4af078;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== 분할 화면 (대결 게임) ===== */
+#battle-game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a12;
+}
+
+#battle-split-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    height: calc(100vh - 80px);
+}
+
+.battle-panel {
+    position: relative;
+    overflow: hidden;
+}
+
+.battle-panel canvas {
+    border: 2px solid #4a7878;
+    border-radius: 4px;
+    background: linear-gradient(to bottom, #0a0a14, #0d0d1a, #121220);
+    box-shadow: 0 0 20px rgba(74, 120, 120, 0.2);
+    display: block;
+    max-height: calc(100vh - 100px);
+    width: auto;
+}
+
+.local-panel canvas {
+    border-color: #4af078;
+    box-shadow: 0 0 20px rgba(74, 240, 120, 0.2);
+}
+
+.remote-panel canvas {
+    border-color: #f04a4a;
+    box-shadow: 0 0 20px rgba(240, 74, 74, 0.2);
+}
+
+.battle-divider {
+    width: 4px;
+    height: 80%;
+    background: linear-gradient(to bottom, transparent, #4a7878, #6a4a5a, #4a7878, transparent);
+    margin: 0 4px;
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(74, 120, 120, 0.4);
+}
+
+/* 대결 HUD */
+#battle-hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    padding: 8px 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid #2a4848;
+}
+
+.battle-target {
+    text-align: center;
+    color: #ffcc00;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+.battle-scores {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.battle-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 300px;
+}
+
+.score-label {
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: right;
+}
+
+.battle-score.local .score-label { color: #4af078; }
+.battle-score.remote .score-label { color: #f04a4a; }
+
+.score-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.score-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.local-fill { background: linear-gradient(to right, #4af078, #4a7878); }
+.remote-fill { background: linear-gradient(to right, #f04a4a, #aa3030); }
+
+.score-value {
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    min-width: 50px;
+}
+
+/* 카운트다운 */
+#battle-countdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 120px;
+    font-weight: bold;
+    color: #4a7878;
+    text-shadow: 0 0 40px #4a7878, 0 0 80px #4a7878;
+    z-index: 100;
+    animation: countPulse 1s ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes countPulse {
+    0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+    30% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+}
+
+/* 대결 컨트롤 */
+#battle-controls {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 20;
+}
+
+#battle-power-bar-container {
+    width: 200px;
+    height: 16px;
+    background: rgba(0, 20, 30, 0.8);
+    border: 1px solid #4a7878;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+#battle-power-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(to right, #4a7878, #6a4a5a, #7a3030);
+    transition: width 0.05s linear;
+}
+
+#battle-quit-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    background: rgba(122, 48, 48, 0.3);
+    border: 1px solid #7a3030;
+    color: #7a3030;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+#battle-quit-btn:hover {
+    background: rgba(122, 48, 48, 0.6);
+    box-shadow: 0 0 10px rgba(122, 48, 48, 0.5);
+}
+
+/* 대결 결과 */
+#battle-result {
+    text-align: center;
+    color: white;
+    padding: 40px;
+}
+
+#battle-result-title {
+    font-size: 64px;
+    margin-bottom: 30px;
+    text-shadow: 0 0 30px currentColor;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+}
+
+#battle-result-detail {
+    background: rgba(74, 120, 120, 0.05);
+    border: 1px solid #4a7878;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 30px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#battle-result-detail p {
+    color: #5a8a9a;
+    font-size: 16px;
+    margin: 8px 0;
+}
+
+.result-compare {
+    color: #4a7878 !important;
+    font-weight: bold;
+    font-size: 20px !important;
+    margin-top: 15px !important;
+}
+
+#battle-result .battle-action-btn {
+    margin: 10px;
+}
+
+/* 대결 정보 텍스트 */
+.battle-info-text {
+    color: #ffcc00;
+    font-size: 16px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+}
+
+#battle-character-options {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* 반응형 분할 화면 */
+@media (max-width: 700px) {
+    #battle-split-screen {
+        flex-direction: column;
+    }
+
+    .battle-divider {
+        width: 80%;
+        height: 4px;
+        margin: 4px 0;
+        background: linear-gradient(to right, transparent, #4a7878, #6a4a5a, #4a7878, transparent);
+    }
+
+    .battle-panel canvas {
+        max-height: calc(45vh - 50px);
+    }
+}

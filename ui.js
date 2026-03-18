@@ -305,18 +305,13 @@ function drawTitleScreen() {
 
 function updateJumpCountDisplay() {
     const jumpsLeft = maxJumps - currentJumps;
-    document.getElementById('jumps-left').textContent = jumpsLeft;
+    const el = document.getElementById('jumps-left');
+    if (el) el.textContent = jumpsLeft;
 }
 
 function checkGameEnd() {
-    if (!gameStarted) return; // 게임이 리셋된 경우 무시
-    if (gameMode === 'bet' && currentJumps >= maxJumps && player.isOnGround && !gameEnded) {
-        gameEnded = true;
-        showResult();
-    } else if (gameMode === 'bet' && currentJumps >= maxJumps && !gameEnded) {
-        // 아직 공중이면 다시 체크
-        setTimeout(checkGameEnd, 100);
-    }
+    // Legacy function kept for compatibility
+    if (!gameStarted) return;
 }
 
 function saveToRanking(height, jumps) {
@@ -358,7 +353,7 @@ function updateRankingUI() {
         rankItem.innerHTML = `
             <span class="rank-number">${index + 1}</span>
             <span class="rank-height">${record.height}m</span>
-            <span class="rank-info">${record.character} | ${record.mode === 'bet' ? record.jumps + '회' : '무제한'}</span>
+            <span class="rank-info">${record.character} | ${record.mode === 'battle' ? '대결' : record.jumps + '회'}</span>
             <span class="rank-date">${record.timestamp}</span>
         `;
         rankingList.appendChild(rankItem);
@@ -519,7 +514,7 @@ function showFullRanking() {
         rankItem.innerHTML = `
             <span class="rank-number">${index + 1}</span>
             <span class="rank-height">${record.height}m</span>
-            <span class="rank-info">${record.character} | ${record.mode === 'bet' ? record.jumps + '회' : '무제한'}</span>
+            <span class="rank-info">${record.character} | ${record.mode === 'battle' ? '대결' : record.jumps + '회'}</span>
             <span class="rank-date">${record.timestamp}</span>
         `;
         rankingViewList.appendChild(rankItem);
@@ -588,11 +583,7 @@ function showTutorial() {
         tutorialSkipped = true;
         document.getElementById('tutorial-screen').style.display = 'none';
         document.getElementById('game-container').style.display = 'flex';
-
-        if (gameMode === 'bet') {
-            document.getElementById('jump-count-display').style.display = 'block';
-            updateJumpCountDisplay();
-        }
+        resolveCanvas();
         startGame();
         return;
     }

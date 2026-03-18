@@ -18,37 +18,171 @@
                 <span class="mode-title">일반 모드</span>
                 <p class="mode-desc">제한 없이 자유롭게 플레이</p>
             </div>
-            <div class="mode-card" data-mode="bet">
-                <div class="mode-icon">🎲</div>
-                <span class="mode-title">내기 모드</span>
-                <p class="mode-desc">제한된 점프 횟수로 도전</p>
+            <div class="mode-card" data-mode="battle">
+                <div class="mode-icon">⚔️</div>
+                <span class="mode-title">대결 모드</span>
+                <p class="mode-desc">1v1 실시간 대결</p>
             </div>
         </div>
         <button id="view-ranking-btn" class="view-ranking-btn">🏆 랭킹 보기</button>
     </div>
 
-    <!-- 점프 횟수 설정 화면 (내기 모드) -->
-    <div id="bet-setup" style="display: none;">
+    <!-- 대결 모드 설정 화면 -->
+    <div id="battle-setup" style="display: none;">
         <h1>Jump Jump</h1>
-        <h2>점프 횟수 설정</h2>
-        <div id="jump-count-setting">
-            <label for="jump-count">최대 점프 횟수:</label>
-            <div class="count-selector">
-                <button id="count-minus">-</button>
-                <input type="number" id="jump-count" value="10" min="1" max="100">
-                <button id="count-plus">+</button>
+        <h2>대결 모드</h2>
+        <div id="battle-setup-content">
+            <div id="battle-target-setting">
+                <label>목표 높이:</label>
+                <div class="count-selector">
+                    <button id="target-minus">-</button>
+                    <input type="number" id="target-height" value="300" min="100" max="600" step="50">
+                    <button id="target-plus">+</button>
+                </div>
+                <div class="preset-buttons">
+                    <button class="target-preset-btn" data-target="100">100m</button>
+                    <button class="target-preset-btn" data-target="200">200m</button>
+                    <button class="target-preset-btn" data-target="300">300m</button>
+                    <button class="target-preset-btn" data-target="600">600m</button>
+                </div>
             </div>
-            <div class="preset-buttons">
-                <button class="preset-btn" data-count="5">5회</button>
-                <button class="preset-btn" data-count="10">10회</button>
-                <button class="preset-btn" data-count="20">20회</button>
-                <button class="preset-btn" data-count="50">50회</button>
+            <div id="battle-role-select">
+                <button id="battle-create-btn" class="battle-role-btn">
+                    <span class="role-icon">🏠</span>
+                    <span class="role-title">방 만들기</span>
+                    <span class="role-desc">초대 코드를 생성합니다</span>
+                </button>
+                <button id="battle-join-btn" class="battle-role-btn">
+                    <span class="role-icon">🚪</span>
+                    <span class="role-title">방 참가</span>
+                    <span class="role-desc">초대 코드로 참가합니다</span>
+                </button>
             </div>
         </div>
-        <button id="confirm-jump-count">확인</button>
+        <button id="battle-setup-back" class="ranking-back-btn">돌아가기</button>
     </div>
 
-    <!-- 캐릭터 선택 화면 -->
+    <!-- 방 만들기 (호스트) 화면 -->
+    <div id="battle-host" style="display: none;">
+        <h1>Jump Jump</h1>
+        <h2>방 만들기</h2>
+        <div id="battle-host-content">
+            <div id="host-step1" class="battle-step">
+                <p class="step-label">1단계: 초대 코드 생성 중...</p>
+                <div class="battle-loading">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+            <div id="host-step2" class="battle-step" style="display: none;">
+                <p class="step-label">1단계: 이 코드를 상대에게 공유하세요</p>
+                <textarea id="host-offer-code" readonly rows="3"></textarea>
+                <button id="host-copy-offer" class="battle-action-btn">코드 복사</button>
+            </div>
+            <div id="host-step3" class="battle-step" style="display: none;">
+                <p class="step-label">2단계: 상대의 응답 코드를 붙여넣으세요</p>
+                <textarea id="host-answer-input" rows="3" placeholder="상대의 응답 코드를 여기에 붙여넣기..."></textarea>
+                <button id="host-accept-answer" class="battle-action-btn">연결하기</button>
+            </div>
+            <div id="host-step4" class="battle-step" style="display: none;">
+                <p class="step-label">연결 완료! 대결 준비 중...</p>
+                <div class="battle-loading">
+                    <div class="loading-spinner connected"></div>
+                </div>
+            </div>
+        </div>
+        <button id="battle-host-back" class="ranking-back-btn">돌아가기</button>
+    </div>
+
+    <!-- 방 참가 (게스트) 화면 -->
+    <div id="battle-guest" style="display: none;">
+        <h1>Jump Jump</h1>
+        <h2>방 참가</h2>
+        <div id="battle-guest-content">
+            <div id="guest-step1" class="battle-step">
+                <p class="step-label">1단계: 호스트의 초대 코드를 붙여넣으세요</p>
+                <textarea id="guest-offer-input" rows="3" placeholder="초대 코드를 여기에 붙여넣기..."></textarea>
+                <button id="guest-join" class="battle-action-btn">참가하기</button>
+            </div>
+            <div id="guest-step2" class="battle-step" style="display: none;">
+                <p class="step-label">2단계: 이 응답 코드를 호스트에게 공유하세요</p>
+                <textarea id="guest-answer-code" readonly rows="3"></textarea>
+                <button id="guest-copy-answer" class="battle-action-btn">코드 복사</button>
+            </div>
+            <div id="guest-step3" class="battle-step" style="display: none;">
+                <p class="step-label">연결 대기 중...</p>
+                <div class="battle-loading">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+            <div id="guest-step4" class="battle-step" style="display: none;">
+                <p class="step-label">연결 완료! 대결 준비 중...</p>
+                <div class="battle-loading">
+                    <div class="loading-spinner connected"></div>
+                </div>
+            </div>
+        </div>
+        <button id="battle-guest-back" class="ranking-back-btn">돌아가기</button>
+    </div>
+
+    <!-- 대결 캐릭터 선택 화면 -->
+    <div id="battle-character-select" style="display: none;">
+        <h1>Jump Jump</h1>
+        <h2>캐릭터 선택</h2>
+        <p class="battle-info-text">목표: <span id="battle-target-display">300</span>m | 먼저 도달하면 승리!</p>
+        <div id="battle-character-options">
+            <div class="character-card" data-character="skeleton">
+                <div class="character-preview skeleton-preview"></div>
+                <span>해골</span>
+            </div>
+            <div class="character-card" data-character="human">
+                <div class="character-preview human-preview"></div>
+                <span>인간</span>
+            </div>
+            <div class="character-card" data-character="dog">
+                <div class="character-preview dog-preview"></div>
+                <span>강아지</span>
+            </div>
+            <div class="character-card" data-character="cat">
+                <div class="character-preview cat-preview"></div>
+                <span>고양이</span>
+            </div>
+        </div>
+        <p class="select-hint">캐릭터를 클릭하여 선택하세요</p>
+    </div>
+
+    <!-- 대결 게임 화면 (분할 스크린) -->
+    <div id="battle-game-container" style="display: none;">
+        <div id="battle-hud"></div>
+        <div id="battle-countdown" style="display: none;">3</div>
+        <div id="battle-split-screen">
+            <div class="battle-panel local-panel">
+                <canvas id="battleCanvasLocal"></canvas>
+            </div>
+            <div class="battle-divider"></div>
+            <div class="battle-panel remote-panel">
+                <canvas id="battleCanvasRemote"></canvas>
+            </div>
+        </div>
+        <div id="battle-controls">
+            <div id="battle-power-bar-container">
+                <div id="battle-power-bar"></div>
+            </div>
+            <button id="battle-quit-btn">나가기 (ESC)</button>
+        </div>
+        <!-- 대결용 숨겨진 메인 캔버스 (로컬 게임 렌더링용) -->
+        <canvas id="gameCanvas" style="display: none;"></canvas>
+        <canvas id="postProcessCanvas" style="display: none;"></canvas>
+    </div>
+
+    <!-- 대결 결과 화면 -->
+    <div id="battle-result" style="display: none;">
+        <h1 id="battle-result-title">결과</h1>
+        <div id="battle-result-detail"></div>
+        <button id="battle-restart-btn" class="battle-action-btn">다시 대결하기</button>
+        <button id="battle-home-btn" class="ranking-back-btn">메인으로</button>
+    </div>
+
+    <!-- 캐릭터 선택 화면 (일반 모드) -->
     <div id="character-select" style="display: none;">
         <h1>Jump Jump</h1>
         <h2>캐릭터 선택</h2>
@@ -138,7 +272,7 @@
         </div>
     </div>
 
-    <!-- 게임 화면 -->
+    <!-- 게임 화면 (일반 모드) -->
     <div id="game-container" style="display: none;">
         <div id="ui">
             <div id="height-display">높이: <span id="height">0</span>m</div>
@@ -164,8 +298,8 @@
                 <div id="progress-goal">600m</div>
             </div>
         </div>
-        <canvas id="gameCanvas"></canvas>
-        <canvas id="postProcessCanvas"></canvas>
+        <canvas id="gameCanvasNormal"></canvas>
+        <canvas id="postProcessCanvasNormal"></canvas>
         <div id="instructions">
             <p><strong>조작법</strong></p>
             <p>← → : 방향 선택 / 공중에서 이동</p>
@@ -182,7 +316,7 @@
         </div>
     </div>
 
-    <!-- 결과 화면 (내기 모드) -->
+    <!-- 결과 화면 -->
     <div id="result-screen" style="display: none;">
         <h1>게임 종료!</h1>
         <div id="result-content">
@@ -190,13 +324,13 @@
             <p class="result-height"><span id="final-height">0</span>m</p>
             <p class="result-jumps">사용한 점프: <span id="total-jumps">0</span>회</p>
         </div>
-        
+
         <!-- 랭킹 표시 -->
         <div id="ranking-section">
             <h3>🏆 Top 10 랭킹</h3>
             <div id="ranking-list"></div>
         </div>
-        
+
         <button id="restart-btn">다시 하기</button>
     </div>
 
@@ -215,6 +349,8 @@
     <script src="renderer.js"></script>
     <script src="ui.js"></script>
     <script src="postprocess.js"></script>
+    <script src="network.js"></script>
+    <script src="battle.js"></script>
     <script src="game.js"></script>
 </body>
 </html>

@@ -1,15 +1,31 @@
 // game.js - Main entry point (lean orchestrator)
-// Dependencies: config.js, audio.js, entities.js, physics.js, renderer.js, ui.js, postprocess.js
+// Dependencies: config.js, audio.js, entities.js, physics.js, renderer.js, ui.js, postprocess.js, network.js, battle.js
 
 // ===== CANVAS SETUP =====
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width  = CANVAS_LOGICAL_W;
-canvas.height = CANVAS_LOGICAL_H;
+// Canvas references are resolved dynamically based on game mode
+let canvas, ctx;
+
+function resolveCanvas() {
+    if (gameMode === 'battle') {
+        canvas = document.getElementById('gameCanvas');
+    } else {
+        // Normal mode: use the dedicated normal canvas, fallback to gameCanvas
+        canvas = document.getElementById('gameCanvasNormal') || document.getElementById('gameCanvas');
+    }
+    if (canvas) {
+        ctx = canvas.getContext('2d');
+        canvas.width = CANVAS_LOGICAL_W;
+        canvas.height = CANVAS_LOGICAL_H;
+    }
+}
 
 function resizeCanvas() {
+    if (gameMode === 'battle') {
+        resizeBattleCanvases();
+        return;
+    }
     const container = document.getElementById('game-container');
-    if (!container) return;
+    if (!container || !canvas) return;
     const vpW = window.innerWidth;
     const vpH = window.innerHeight;
     const scaleX = vpW / CANVAS_LOGICAL_W;
@@ -17,17 +33,41 @@ function resizeCanvas() {
     const scale  = Math.min(scaleX, scaleY, 1.4);
     canvas.style.width  = Math.floor(CANVAS_LOGICAL_W * scale) + 'px';
     canvas.style.height = Math.floor(CANVAS_LOGICAL_H * scale) + 'px';
-    const ppCanvas = document.getElementById('postProcessCanvas');
+    const ppCanvas = document.getElementById('postProcessCanvasNormal');
     if (ppCanvas) {
         ppCanvas.style.width  = canvas.style.width;
         ppCanvas.style.height = canvas.style.height;
     }
 }
+
+function resizeBattleCanvases() {
+    const localC = document.getElementById('battleCanvasLocal');
+    const remoteC = document.getElementById('battleCanvasRemote');
+    if (!localC || !remoteC) return;
+
+    const vpH = window.innerHeight - 100; // Leave room for HUD
+    const vpW = (window.innerWidth - 20) / 2; // Half width minus divider
+    const scaleX = vpW / CANVAS_LOGICAL_W;
+    const scaleY = vpH / CANVAS_LOGICAL_H;
+    const scale = Math.min(scaleX, scaleY, 1.0);
+
+    const w = Math.floor(CANVAS_LOGICAL_W * scale) + 'px';
+    const h = Math.floor(CANVAS_LOGICAL_H * scale) + 'px';
+
+    localC.style.width = w;
+    localC.style.height = h;
+    remoteC.style.width = w;
+    remoteC.style.height = h;
+}
+
 window.addEventListener('resize', resizeCanvas);
 document.addEventListener('DOMContentLoaded', () => {
     const observer = new MutationObserver(() => {
         const gc = document.getElementById('game-container');
-        if (gc && gc.style.display !== 'none') resizeCanvas();
+        const bgc = document.getElementById('battle-game-container');
+        if ((gc && gc.style.display !== 'none') || (bgc && bgc.style.display !== 'none')) {
+            resizeCanvas();
+        }
     });
     observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['style'] });
 });
@@ -48,7 +88,7 @@ let hitStopFrames = 0;
 
 // ===== PLAYER =====
 const player = {
-    x: canvas.width / 2 - 15,
+    x: 250 - 15,
     y: WORLD_FLOOR_Y - 40,
     width: 30,
     height: 40,
@@ -95,8 +135,7 @@ function getCurrentZoneTheme() {
     return zones[getCurrentZone()];
 }
 
-// Initialize scanline cache now that canvas is ready
-scanlineCache = createScanlineCache();
+// scanlineCache is declared in renderer.js
 
 // ===== HIT STOP =====
 function triggerHitStop(frames) {
@@ -233,11 +272,8 @@ function update() {
 
     // Jump execute (on space release)
     if (!keys.space && player.isCharging && player.isOnGround && !gameEnded) {
-        if (gameMode === 'bet' && currentJumps >= maxJumps) {
-            player.isCharging = false;
-            player.jumpPower = 0;
-            return;
-        }
+        // Battle mode: no jump limit, just jump
+        // (removed old bet mode logic)
 
         playSFX('jump_release');
         player.velocityY = -player.jumpPower;
@@ -247,14 +283,7 @@ function update() {
         player.jumpPower = 0;
         player.squashStretch = 1.3;
         achievementStats.totalJumps++;
-
-        if (gameMode === 'bet') {
-            currentJumps++;
-            updateJumpCountDisplay();
-            if (currentJumps >= maxJumps) {
-                setTimeout(checkGameEnd, 100);
-            }
-        }
+        currentJumps++;
     }
 
     // Slow motion factor
@@ -329,21 +358,23 @@ function update() {
     checkBlockSideCollision();
     checkLanding();
 
-    // Checkpoint respawn on fall
-    if (player.isOnGround && (WORLD_FLOOR_Y - player.y - player.height) / 10 < 5) {
-        if (powerups.shield.active) {
-            powerups.shield.active = false;
-            screenShakeIntensity = 5;
-            showStoryDialog('✦ 실드가 추락을 막았습니다!', false);
-            if (lastCheckpointHeight > 0) respawnAtCheckpoint();
-            else {
-                player.y = WORLD_FLOOR_Y - 140;
-                player.x = canvas.width / 2 - 15;
-                player.velocityY = -8;
-            }
-        } else if (lastCheckpointHeight > 0) {
-            if (respawnAtCheckpoint()) {
-                showStoryDialog('체크포인트에서 다시 시작합니다...', false);
+    // Checkpoint respawn on fall (only in non-battle mode)
+    if (gameMode !== 'battle') {
+        if (player.isOnGround && (WORLD_FLOOR_Y - player.y - player.height) / 10 < 5) {
+            if (powerups.shield.active) {
+                powerups.shield.active = false;
+                screenShakeIntensity = 5;
+                showStoryDialog('✦ 실드가 추락을 막았습니다!', false);
+                if (lastCheckpointHeight > 0) respawnAtCheckpoint();
+                else {
+                    player.y = WORLD_FLOOR_Y - 140;
+                    player.x = canvas.width / 2 - 15;
+                    player.velocityY = -8;
+                }
+            } else if (lastCheckpointHeight > 0) {
+                if (respawnAtCheckpoint()) {
+                    showStoryDialog('체크포인트에서 다시 시작합니다...', false);
+                }
             }
         }
     }
@@ -379,13 +410,24 @@ function update() {
     const currentHeight = Math.floor((WORLD_FLOOR_Y - player.y - player.height) / 10);
     if (currentHeight > maxHeight) {
         maxHeight = currentHeight;
-        checkStoryMilestone(currentHeight);
-        checkCheckpoint(currentHeight);
+        if (gameMode !== 'battle') {
+            checkStoryMilestone(currentHeight);
+            checkCheckpoint(currentHeight);
+        }
     }
 
     // UI update
-    document.getElementById('height').textContent = Math.max(0, currentHeight);
-    document.getElementById('power-bar').style.width = (player.jumpPower / MAX_JUMP_POWER * 100) + '%';
+    const heightEl = document.getElementById('height');
+    if (heightEl) heightEl.textContent = Math.max(0, currentHeight);
+
+    const powerBar = document.getElementById('power-bar');
+    if (powerBar) powerBar.style.width = (player.jumpPower / MAX_JUMP_POWER * 100) + '%';
+
+    // Battle mode power bar update
+    if (gameMode === 'battle') {
+        const battlePowerBar = document.getElementById('battle-power-bar');
+        if (battlePowerBar) battlePowerBar.style.width = (player.jumpPower / MAX_JUMP_POWER * 100) + '%';
+    }
 
     // BGM
     updateBGM();
@@ -394,6 +436,8 @@ function update() {
 
 // ===== RENDER =====
 function render() {
+    if (!ctx) return;
+
     const shakeX = screenShakeIntensity > 0 ? (Math.random() - 0.5) * screenShakeIntensity : 0;
     const shakeY = screenShakeIntensity > 0 ? (Math.random() - 0.5) * screenShakeIntensity : 0;
 
@@ -471,12 +515,14 @@ function render() {
     ctx.fillText(`MAX: ${maxHeight}m`, canvas.width - 10, 30);
     ctx.restore();
 
-    drawPowerupHUD();
-    drawAchievementNotif();
-    updateProgressBar();
+    if (gameMode !== 'battle') {
+        drawPowerupHUD();
+        drawAchievementNotif();
+        updateProgressBar();
+    }
 
-    // WebGL post-processing
-    if (typeof postProcessor !== 'undefined' && postProcessor.initialized) {
+    // WebGL post-processing (only in non-battle mode for performance)
+    if (gameMode !== 'battle' && typeof postProcessor !== 'undefined' && postProcessor.initialized) {
         if (postProcessor.captureFrame(canvas)) {
             const zone = getCurrentZone();
             const zoneProgress = (maxHeight % 100) / 100;
@@ -487,6 +533,11 @@ function render() {
                 time: performance.now() / 1000
             });
         }
+    }
+
+    // Battle mode: render split screen
+    if (gameMode === 'battle' && Battle.isActive()) {
+        Battle.renderBattle();
     }
 }
 
@@ -507,6 +558,10 @@ function gameLoop() {
 function startGame() {
     if (gameStarted) return;
     gameStarted = true;
+    resolveCanvas();
+    if (!scanlineCache && canvas) {
+        scanlineCache = createScanlineCache();
+    }
     generateBlocks();
     generateItems();
     if (gameLoopId) {
@@ -517,7 +572,7 @@ function startGame() {
 }
 
 function resetGame() {
-    player.x = canvas.width / 2 - 15;
+    player.x = canvas ? canvas.width / 2 - 15 : 250 - 15;
     player.y = WORLD_FLOOR_Y - 40;
     player.velocityX = 0;
     player.velocityY = 0;
@@ -628,8 +683,15 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (e.code === 'Escape' && gameStarted && !gameEnded) {
-        gameEnded = true;
-        showResult();
+        if (gameMode === 'battle') {
+            // Battle mode: quit battle
+            gameEnded = true;
+            Network.sendMessage('disconnect', {});
+            Battle.showBattleResult('disconnect');
+        } else {
+            gameEnded = true;
+            showResult();
+        }
     }
 
     if (gameStarted && (e.code === 'Space' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'Escape')) {
@@ -645,6 +707,13 @@ document.addEventListener('keyup', (e) => {
 
 // ===== PAGE LOAD INITIALIZATION =====
 window.addEventListener('load', () => {
+    // Default canvas init for normal mode
+    gameMode = 'normal';
+    resolveCanvas();
+    if (canvas) {
+        scanlineCache = createScanlineCache();
+    }
+
     const titleCanvas = document.getElementById('titleScreenCanvas');
     if (titleCanvas) {
         titleCanvas.width = 500;
@@ -654,8 +723,8 @@ window.addEventListener('load', () => {
 
     // WebGL post-processing pipeline init
     if (typeof postProcessor !== 'undefined') {
-        const gameCanvas = document.getElementById('gameCanvas');
-        const ppCanvas = document.getElementById('postProcessCanvas');
+        const gameCanvas = document.getElementById('gameCanvasNormal') || document.getElementById('gameCanvas');
+        const ppCanvas = document.getElementById('postProcessCanvasNormal') || document.getElementById('postProcessCanvas');
         if (gameCanvas && ppCanvas) {
             ppCanvas.width = gameCanvas.width;
             ppCanvas.height = gameCanvas.height;
@@ -664,6 +733,17 @@ window.addEventListener('load', () => {
     }
 
     setupTouchControls();
+
+    // Setup network message handler
+    Network.onMessage((data) => {
+        Battle.handleNetworkMessage(data);
+    });
+
+    Network.onDisconnected(() => {
+        if (Battle.isActive() && !Battle.getWinner()) {
+            Battle.showBattleResult('disconnect');
+        }
+    });
 });
 
 // ===== UI EVENT LISTENERS =====
@@ -672,43 +752,244 @@ window.addEventListener('load', () => {
 document.querySelectorAll('.mode-card').forEach(card => {
     card.addEventListener('click', () => {
         if (!audioInitialized) initAudio();
-        gameMode = card.dataset.mode;
+        const mode = card.dataset.mode;
         document.getElementById('mode-select').style.display = 'none';
-        if (gameMode === 'bet') {
-            document.getElementById('bet-setup').style.display = 'block';
+
+        if (mode === 'battle') {
+            gameMode = 'battle';
+            document.getElementById('battle-setup').style.display = 'block';
         } else {
+            gameMode = 'normal';
             document.getElementById('character-select').style.display = 'block';
         }
     });
 });
 
-// Jump count controls
-document.getElementById('count-minus').addEventListener('click', () => {
-    const input = document.getElementById('jump-count');
-    const value = parseInt(input.value) || 10;
-    input.value = Math.max(1, value - 1);
+// ===== BATTLE MODE UI EVENTS =====
+
+// Target height controls
+document.getElementById('target-minus')?.addEventListener('click', () => {
+    const input = document.getElementById('target-height');
+    const value = parseInt(input.value) || 300;
+    input.value = Math.max(100, value - 50);
 });
 
-document.getElementById('count-plus').addEventListener('click', () => {
-    const input = document.getElementById('jump-count');
-    const value = parseInt(input.value) || 10;
-    input.value = Math.min(100, value + 1);
+document.getElementById('target-plus')?.addEventListener('click', () => {
+    const input = document.getElementById('target-height');
+    const value = parseInt(input.value) || 300;
+    input.value = Math.min(600, value + 50);
 });
 
-document.querySelectorAll('.preset-btn').forEach(btn => {
+document.querySelectorAll('.target-preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.getElementById('jump-count').value = btn.dataset.count;
+        document.getElementById('target-height').value = btn.dataset.target;
     });
 });
 
-document.getElementById('confirm-jump-count').addEventListener('click', () => {
-    maxJumps = parseInt(document.getElementById('jump-count').value) || 10;
-    document.getElementById('bet-setup').style.display = 'none';
-    document.getElementById('character-select').style.display = 'block';
+// Battle setup back
+document.getElementById('battle-setup-back')?.addEventListener('click', () => {
+    document.getElementById('battle-setup').style.display = 'none';
+    document.getElementById('mode-select').style.display = 'block';
 });
 
-// Character selection
-document.querySelectorAll('.character-card').forEach(card => {
+// Create room (Host)
+document.getElementById('battle-create-btn')?.addEventListener('click', async () => {
+    const target = parseInt(document.getElementById('target-height').value) || 300;
+    Battle.setTargetHeight(target);
+    Battle.setSeed(Math.floor(Math.random() * 999999));
+
+    document.getElementById('battle-setup').style.display = 'none';
+    document.getElementById('battle-host').style.display = 'block';
+
+    try {
+        const offerCode = await Network.createRoom();
+        document.getElementById('host-step1').style.display = 'none';
+        document.getElementById('host-step2').style.display = 'block';
+        document.getElementById('host-offer-code').value = offerCode;
+    } catch (err) {
+        alert('방 생성 실패: ' + err.message);
+    }
+});
+
+// Copy offer code
+document.getElementById('host-copy-offer')?.addEventListener('click', () => {
+    const code = document.getElementById('host-offer-code');
+    code.select();
+    document.execCommand('copy');
+    document.getElementById('host-copy-offer').textContent = '복사됨!';
+    setTimeout(() => {
+        document.getElementById('host-copy-offer').textContent = '코드 복사';
+    }, 2000);
+    // Show answer input
+    document.getElementById('host-step3').style.display = 'block';
+});
+
+// Accept answer (Host)
+document.getElementById('host-accept-answer')?.addEventListener('click', async () => {
+    const answerCode = document.getElementById('host-answer-input').value.trim();
+    if (!answerCode) return;
+
+    try {
+        await Network.acceptAnswer(answerCode);
+        document.getElementById('host-step3').style.display = 'none';
+        document.getElementById('host-step4').style.display = 'block';
+
+        // Send battle config to guest
+        Network.sendMessage('battleConfig', {
+            seed: Battle.getSeed(),
+            target: Battle.getTargetHeight(),
+            character: selectedCharacter
+        });
+
+        // Wait a moment then go to character select
+        setTimeout(() => {
+            document.getElementById('battle-host').style.display = 'none';
+            document.getElementById('battle-target-display').textContent = Battle.getTargetHeight();
+            document.getElementById('battle-character-select').style.display = 'block';
+        }, 1500);
+    } catch (err) {
+        alert('연결 실패: ' + err.message);
+    }
+});
+
+document.getElementById('battle-host-back')?.addEventListener('click', () => {
+    Network.disconnect();
+    document.getElementById('battle-host').style.display = 'none';
+    document.getElementById('host-step1').style.display = 'block';
+    document.getElementById('host-step2').style.display = 'none';
+    document.getElementById('host-step3').style.display = 'none';
+    document.getElementById('host-step4').style.display = 'none';
+    document.getElementById('battle-setup').style.display = 'block';
+});
+
+// Join room (Guest)
+document.getElementById('battle-join-btn')?.addEventListener('click', () => {
+    document.getElementById('battle-setup').style.display = 'none';
+    document.getElementById('battle-guest').style.display = 'block';
+});
+
+document.getElementById('guest-join')?.addEventListener('click', async () => {
+    const offerCode = document.getElementById('guest-offer-input').value.trim();
+    if (!offerCode) return;
+
+    try {
+        const answerCode = await Network.joinRoom(offerCode);
+        document.getElementById('guest-step1').style.display = 'none';
+        document.getElementById('guest-step2').style.display = 'block';
+        document.getElementById('guest-answer-code').value = answerCode;
+    } catch (err) {
+        alert('참가 실패: ' + err.message);
+    }
+});
+
+// Copy answer code (Guest)
+document.getElementById('guest-copy-answer')?.addEventListener('click', () => {
+    const code = document.getElementById('guest-answer-code');
+    code.select();
+    document.execCommand('copy');
+    document.getElementById('guest-copy-answer').textContent = '복사됨!';
+    setTimeout(() => {
+        document.getElementById('guest-copy-answer').textContent = '코드 복사';
+    }, 2000);
+    // Show waiting
+    document.getElementById('guest-step3').style.display = 'block';
+});
+
+// Guest: Listen for connection and battle config
+Network.onConnected(() => {
+    if (!Network.isHostPlayer()) {
+        // Guest connected
+        document.getElementById('guest-step3').style.display = 'none';
+        document.getElementById('guest-step4').style.display = 'block';
+
+        // Wait for config then go to character select
+        setTimeout(() => {
+            document.getElementById('battle-guest').style.display = 'none';
+            document.getElementById('battle-target-display').textContent = Battle.getTargetHeight();
+            document.getElementById('battle-character-select').style.display = 'block';
+        }, 1500);
+    }
+});
+
+document.getElementById('battle-guest-back')?.addEventListener('click', () => {
+    Network.disconnect();
+    document.getElementById('battle-guest').style.display = 'none';
+    document.getElementById('guest-step1').style.display = 'block';
+    document.getElementById('guest-step2').style.display = 'none';
+    document.getElementById('guest-step3').style.display = 'none';
+    document.getElementById('guest-step4').style.display = 'none';
+    document.getElementById('battle-setup').style.display = 'block';
+});
+
+// Battle character selection
+document.querySelectorAll('#battle-character-options .character-card').forEach(card => {
+    card.addEventListener('click', () => {
+        if (!audioInitialized) initAudio();
+        selectedCharacter = card.dataset.character;
+
+        document.getElementById('battle-character-select').style.display = 'none';
+        document.getElementById('battle-game-container').style.display = 'flex';
+
+        // Setup split screen
+        gameMode = 'battle';
+        resolveCanvas();
+
+        Battle.setupSplitScreen();
+        Battle.initBattle(Battle.getSeed(), Battle.getTargetHeight());
+
+        resizeBattleCanvases();
+
+        // Send ready signal and character info
+        Network.sendMessage('ready', { character: selectedCharacter });
+
+        // Host starts countdown, guest waits
+        if (Network.isHostPlayer()) {
+            Battle.startCountdown();
+        }
+    });
+});
+
+// Battle result buttons
+document.getElementById('battle-restart-btn')?.addEventListener('click', () => {
+    Battle.cleanup();
+    document.getElementById('battle-result').style.display = 'none';
+    document.getElementById('battle-setup').style.display = 'block';
+    if (gameLoopId) {
+        cancelAnimationFrame(gameLoopId);
+        gameLoopId = null;
+    }
+    gameMode = 'normal';
+    resolveCanvas();
+    resetGame();
+});
+
+document.getElementById('battle-home-btn')?.addEventListener('click', () => {
+    Battle.cleanup();
+    document.getElementById('battle-result').style.display = 'none';
+    document.getElementById('mode-select').style.display = 'block';
+    if (gameLoopId) {
+        cancelAnimationFrame(gameLoopId);
+        gameLoopId = null;
+    }
+    gameMode = 'normal';
+    resolveCanvas();
+    resetGame();
+    drawTitleScreen();
+});
+
+// Battle quit button
+document.getElementById('battle-quit-btn')?.addEventListener('click', () => {
+    if (gameStarted && !gameEnded) {
+        gameEnded = true;
+        Network.sendMessage('disconnect', {});
+        Battle.showBattleResult('disconnect');
+    }
+});
+
+// ===== NORMAL MODE UI EVENTS =====
+
+// Character selection (normal mode)
+document.querySelectorAll('#character-options .character-card').forEach(card => {
     card.addEventListener('click', () => {
         if (!audioInitialized) initAudio();
         selectedCharacter = card.dataset.character;
@@ -726,6 +1007,8 @@ document.getElementById('restart-btn').addEventListener('click', () => {
         cancelAnimationFrame(gameLoopId);
         gameLoopId = null;
     }
+    gameMode = 'normal';
+    resolveCanvas();
     resetGame();
     drawTitleScreen();
 });
@@ -758,6 +1041,8 @@ document.getElementById('ending-restart-btn').addEventListener('click', () => {
     document.getElementById('ending-credits').style.display = 'none';
     document.getElementById('mode-select').style.display = 'block';
     document.getElementById('jump-count-display').style.display = 'none';
+    gameMode = 'normal';
+    resolveCanvas();
     resetGame();
     drawTitleScreen();
 });
@@ -766,10 +1051,7 @@ document.getElementById('ending-restart-btn').addEventListener('click', () => {
 document.getElementById('tutorial-start-btn').addEventListener('click', () => {
     document.getElementById('tutorial-screen').style.display = 'none';
     document.getElementById('game-container').style.display = 'flex';
-    if (gameMode === 'bet') {
-        document.getElementById('jump-count-display').style.display = 'block';
-        updateJumpCountDisplay();
-    }
+    resolveCanvas();
     startGame();
 });
 
@@ -777,9 +1059,6 @@ document.getElementById('tutorial-skip-btn').addEventListener('click', () => {
     localStorage.setItem('jumpJumpSkipTutorial', 'true');
     document.getElementById('tutorial-screen').style.display = 'none';
     document.getElementById('game-container').style.display = 'flex';
-    if (gameMode === 'bet') {
-        document.getElementById('jump-count-display').style.display = 'block';
-        updateJumpCountDisplay();
-    }
+    resolveCanvas();
     startGame();
 });
