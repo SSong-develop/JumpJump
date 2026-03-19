@@ -605,6 +605,7 @@ const Battle = (() => {
         getRemoteMaxHeight,
         getWinner,
         remotePlayer,
+        drawCharacterSimple,
         setTargetHeight: (h) => { targetHeight = h; },
         setSeed: (s) => { battleSeed = s; },
         getSeed: () => battleSeed

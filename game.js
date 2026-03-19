@@ -248,16 +248,25 @@ function update() {
         }
     }
 
+    // P1 stun check (interference mode)
+    const p1Stunned = typeof LocalBattle !== 'undefined' && LocalBattle.isP1Stunned();
+
     // Jump buffer check - auto-execute buffered jump on landing
-    if (player.isOnGround && player.jumpBufferTimer > 0 && !player.isCharging && keys.space) {
+    if (!p1Stunned && player.isOnGround && player.jumpBufferTimer > 0 && !player.isCharging && keys.space) {
         player.isCharging = true;
         player.jumpPower = 0;
         player.jumpBufferTimer = 0;
         playSFX('jump_charge');
     }
 
+    // Cancel charge if stunned
+    if (p1Stunned && player.isCharging) {
+        player.isCharging = false;
+        player.jumpPower = 0;
+    }
+
     // Jump charge
-    if (player.isCharging && player.isOnGround) {
+    if (!p1Stunned && player.isCharging && player.isOnGround) {
         player.jumpPower = Math.min(player.jumpPower + CHARGE_SPEED, MAX_JUMP_POWER);
         if (keys.left) {
             player.direction = -1;
@@ -271,7 +280,7 @@ function update() {
     }
 
     // Jump execute (on space release)
-    if (!keys.space && player.isCharging && player.isOnGround && !gameEnded) {
+    if (!p1Stunned && !keys.space && player.isCharging && player.isOnGround && !gameEnded) {
         // Battle mode: no jump limit, just jump
         // (removed old bet mode logic)
 
@@ -297,8 +306,8 @@ function update() {
         }
     }
 
-    // Air control
-    if (!player.isOnGround) {
+    // Air control (blocked when P1 stunned)
+    if (!player.isOnGround && !p1Stunned) {
         const airControlForce = AIR_CONTROL * slowFactor;
         if (keys.left) {
             player.velocityX = Math.max(player.velocityX - airControlForce, -HORIZONTAL_SPEED * 1.2);
@@ -536,8 +545,12 @@ function render() {
     }
 
     // Battle mode: render split screen
-    if (gameMode === 'battle' && Battle.isActive()) {
-        Battle.renderBattle();
+    if (gameMode === 'battle') {
+        if (LocalBattle.isActive()) {
+            LocalBattle.renderLocalBattle();
+        } else if (Battle.isActive()) {
+            Battle.renderBattle();
+        }
     }
 }
 
@@ -683,8 +696,10 @@ document.addEventListener('keydown', (e) => {
     }
 
     if (e.code === 'Escape' && gameStarted && !gameEnded) {
-        if (gameMode === 'battle') {
-            // Battle mode: quit battle
+        if (LocalBattle && LocalBattle.isActive()) {
+            // Handled by local battle ESC handler
+        } else if (gameMode === 'battle') {
+            // Online battle mode: quit battle
             gameEnded = true;
             Network.sendMessage('disconnect', {});
             Battle.showBattleResult('disconnect');
@@ -983,6 +998,113 @@ document.getElementById('battle-quit-btn')?.addEventListener('click', () => {
         gameEnded = true;
         Network.sendMessage('disconnect', {});
         Battle.showBattleResult('disconnect');
+    }
+});
+
+// ===== LOCAL BATTLE UI EVENTS =====
+
+// Local battle button
+document.getElementById('battle-local-btn')?.addEventListener('click', () => {
+    const target = parseInt(document.getElementById('target-height').value) || 300;
+    Battle.setTargetHeight(target);
+    Battle.setSeed(Math.floor(Math.random() * 999999));
+
+    document.getElementById('battle-setup').style.display = 'none';
+    document.getElementById('local-battle-char-select').style.display = 'block';
+    document.getElementById('local-battle-target-display').textContent = target;
+});
+
+// Local battle character selection
+let localP1Char = 'human';
+let localP2Char = 'skeleton';
+
+document.querySelectorAll('#p1-char-options .character-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('#p1-char-options .character-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        localP1Char = card.dataset.character;
+    });
+});
+
+document.querySelectorAll('#p2-char-options .character-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('#p2-char-options .character-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        localP2Char = card.dataset.character;
+    });
+});
+
+// Interference mode toggle
+document.getElementById('interference-mode-btn')?.addEventListener('click', () => {
+    const btn = document.getElementById('interference-mode-btn');
+    const desc = document.getElementById('interference-mode-desc');
+    const isActive = btn.classList.toggle('active');
+    btn.querySelector('.mode-status').textContent = isActive ? 'ON' : 'OFF';
+    desc.classList.toggle('active', isActive);
+    LocalBattle.setInterferenceMode(isActive);
+});
+
+// Local battle start
+document.getElementById('local-battle-start-btn')?.addEventListener('click', () => {
+    if (!audioInitialized) initAudio();
+    selectedCharacter = localP1Char;
+
+    document.getElementById('local-battle-char-select').style.display = 'none';
+    document.getElementById('battle-game-container').style.display = 'flex';
+
+    gameMode = 'battle';
+    resolveCanvas();
+    resizeBattleCanvases();
+
+    LocalBattle.startWithCountdown(
+        Battle.getSeed(),
+        Battle.getTargetHeight(),
+        localP1Char,
+        localP2Char
+    );
+});
+
+// Override battle result buttons for local mode too
+const origBattleRestart = document.getElementById('battle-restart-btn');
+const origBattleHome = document.getElementById('battle-home-btn');
+
+if (origBattleRestart) {
+    origBattleRestart.addEventListener('click', () => {
+        LocalBattle.cleanup();
+    });
+}
+if (origBattleHome) {
+    origBattleHome.addEventListener('click', () => {
+        LocalBattle.cleanup();
+    });
+}
+
+// Battle quit also handles local battle
+const origBattleQuit = document.getElementById('battle-quit-btn');
+if (origBattleQuit) {
+    origBattleQuit.addEventListener('click', () => {
+        if (LocalBattle.isActive() && !LocalBattle.getWinner()) {
+            gameEnded = true;
+            document.getElementById('battle-game-container').style.display = 'none';
+            document.getElementById('battle-result').style.display = 'block';
+            document.getElementById('battle-result-title').textContent = '대결 중단';
+            document.getElementById('battle-result-title').style.color = '#ffcc00';
+            document.getElementById('battle-result-detail').innerHTML = `<p>대결이 중단되었습니다.</p>`;
+            LocalBattle.cleanup();
+        }
+    });
+}
+
+// ESC key for local battle
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape' && LocalBattle.isActive() && !LocalBattle.getWinner()) {
+        gameEnded = true;
+        document.getElementById('battle-game-container').style.display = 'none';
+        document.getElementById('battle-result').style.display = 'block';
+        document.getElementById('battle-result-title').textContent = '대결 중단';
+        document.getElementById('battle-result-title').style.color = '#ffcc00';
+        document.getElementById('battle-result-detail').innerHTML = `<p>대결이 중단되었습니다.</p>`;
+        LocalBattle.cleanup();
     }
 });
 

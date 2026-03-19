@@ -1331,6 +1331,70 @@ body {
     background: linear-gradient(135deg, #6a4a5a, #aa0088);
 }
 
+/* 방해모드 토글 */
+#local-battle-mode-toggle {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.mode-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border: 2px solid #3a3a4a;
+    border-radius: 30px;
+    background: rgba(20, 20, 30, 0.8);
+    color: #888;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mode-toggle-btn:hover {
+    border-color: #6a4a5a;
+    background: rgba(40, 20, 30, 0.8);
+}
+
+.mode-toggle-btn.active {
+    border-color: #ff4444;
+    background: rgba(60, 15, 15, 0.9);
+    color: #ff6666;
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.3), inset 0 0 15px rgba(255, 68, 68, 0.1);
+}
+
+.mode-toggle-btn.active .mode-status {
+    color: #ff4444;
+}
+
+.mode-icon {
+    font-size: 18px;
+}
+
+.mode-status {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.1);
+    letter-spacing: 1px;
+}
+
+.mode-toggle-btn.active .mode-status {
+    background: rgba(255, 68, 68, 0.2);
+}
+
+.mode-desc {
+    color: #555;
+    font-size: 12px;
+    margin-top: 8px;
+    transition: color 0.3s;
+}
+
+.mode-desc.active {
+    color: #cc6666;
+}
+
 /* 로딩 스피너 */
 .battle-loading {
     display: flex;
@@ -1431,6 +1495,24 @@ body {
     text-transform: uppercase;
     letter-spacing: 2px;
     text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+.battle-mode-indicator {
+    display: inline-block;
+    background: rgba(255, 50, 50, 0.2);
+    border: 1px solid rgba(255, 68, 68, 0.4);
+    color: #ff6666;
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(255, 68, 68, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(255, 68, 68, 0.6); }
 }
 
 .battle-scores {
@@ -1603,6 +1685,100 @@ body {
     gap: 20px;
     justify-content: center;
     flex-wrap: wrap;
+}
+
+/* 로컬 대결 캐릭터 선택 */
+#local-battle-char-select {
+    text-align: center;
+    color: white;
+}
+
+#local-battle-char-select h1 {
+    font-size: 48px;
+    color: #4a7878;
+    text-shadow: 0 0 20px #4a7878, 0 0 40px #4a7878;
+    margin-bottom: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+#local-battle-char-select h2 {
+    font-size: 24px;
+    color: #5a8a9a;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+}
+
+.local-char-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.local-char-section {
+    flex: 1;
+    max-width: 350px;
+}
+
+.player-label {
+    font-size: 16px;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.p1-label { color: #4af078; text-shadow: 0 0 10px rgba(74, 240, 120, 0.5); }
+.p2-label { color: #f04a4a; text-shadow: 0 0 10px rgba(240, 74, 74, 0.5); }
+
+.local-char-options {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.local-char-options .character-card {
+    width: 80px;
+    padding: 12px;
+}
+
+.local-char-options .character-card .character-preview {
+    width: 40px;
+    height: 55px;
+}
+
+.local-char-options .character-card span {
+    font-size: 11px;
+    margin-top: 8px;
+}
+
+.local-char-options .character-card.selected {
+    border-color: #ffcc00;
+    box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+    transform: translateY(-5px);
+}
+
+.local-char-divider {
+    font-size: 36px;
+    font-weight: bold;
+    color: #6a4a5a;
+    text-shadow: 0 0 20px rgba(106, 74, 90, 0.5);
+    padding: 40px 10px 0;
+    align-self: center;
+}
+
+.local-battle-btn {
+    border-color: #ffcc00 !important;
+}
+
+.local-battle-btn:hover {
+    box-shadow: 0 0 30px rgba(255, 204, 0, 0.4) !important;
+}
+
+.local-battle-btn .role-title {
+    color: #ffcc00 !important;
 }
 
 /* 반응형 분할 화면 */

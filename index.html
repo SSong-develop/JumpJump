@@ -47,6 +47,11 @@
                 </div>
             </div>
             <div id="battle-role-select">
+                <button id="battle-local-btn" class="battle-role-btn local-battle-btn">
+                    <span class="role-icon">🎮</span>
+                    <span class="role-title">로컬 대결</span>
+                    <span class="role-desc">같은 키보드로 2인 플레이</span>
+                </button>
                 <button id="battle-create-btn" class="battle-role-btn">
                     <span class="role-icon">🏠</span>
                     <span class="role-title">방 만들기</span>
@@ -124,7 +129,68 @@
         <button id="battle-guest-back" class="ranking-back-btn">돌아가기</button>
     </div>
 
-    <!-- 대결 캐릭터 선택 화면 -->
+    <!-- 로컬 대결 캐릭터 선택 (P1 + P2) -->
+    <div id="local-battle-char-select" style="display: none;">
+        <h1>Jump Jump</h1>
+        <h2>캐릭터 선택</h2>
+        <p class="battle-info-text">목표: <span id="local-battle-target-display">300</span>m | 먼저 도달하면 승리!</p>
+        <div class="local-char-row">
+            <div class="local-char-section">
+                <h3 class="player-label p1-label">P1 (방향키 + Space)</h3>
+                <div class="local-char-options" id="p1-char-options">
+                    <div class="character-card selected" data-character="human">
+                        <div class="character-preview human-preview"></div>
+                        <span>인간</span>
+                    </div>
+                    <div class="character-card" data-character="skeleton">
+                        <div class="character-preview skeleton-preview"></div>
+                        <span>해골</span>
+                    </div>
+                    <div class="character-card" data-character="dog">
+                        <div class="character-preview dog-preview"></div>
+                        <span>강아지</span>
+                    </div>
+                    <div class="character-card" data-character="cat">
+                        <div class="character-preview cat-preview"></div>
+                        <span>고양이</span>
+                    </div>
+                </div>
+            </div>
+            <div class="local-char-divider">VS</div>
+            <div class="local-char-section">
+                <h3 class="player-label p2-label">P2 (WASD)</h3>
+                <div class="local-char-options" id="p2-char-options">
+                    <div class="character-card" data-character="human">
+                        <div class="character-preview human-preview"></div>
+                        <span>인간</span>
+                    </div>
+                    <div class="character-card selected" data-character="skeleton">
+                        <div class="character-preview skeleton-preview"></div>
+                        <span>해골</span>
+                    </div>
+                    <div class="character-card" data-character="dog">
+                        <div class="character-preview dog-preview"></div>
+                        <span>강아지</span>
+                    </div>
+                    <div class="character-card" data-character="cat">
+                        <div class="character-preview cat-preview"></div>
+                        <span>고양이</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="local-battle-mode-toggle">
+            <button id="interference-mode-btn" class="mode-toggle-btn">
+                <span class="mode-icon">⚔️</span>
+                <span class="mode-label">방해모드</span>
+                <span class="mode-status">OFF</span>
+            </button>
+            <p class="mode-desc" id="interference-mode-desc">캐릭터끼리 부딪혀서 밀치고 밟을 수 있습니다!</p>
+        </div>
+        <button id="local-battle-start-btn" class="battle-action-btn">대결 시작!</button>
+    </div>
+
+    <!-- 대결 캐릭터 선택 화면 (온라인) -->
     <div id="battle-character-select" style="display: none;">
         <h1>Jump Jump</h1>
         <h2>캐릭터 선택</h2>
@@ -351,6 +417,7 @@
     <script src="postprocess.js"></script>
     <script src="network.js"></script>
     <script src="battle.js"></script>
+    <script src="local-battle.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
