@@ -38,6 +38,12 @@ function resizeCanvas() {
         ppCanvas.style.width  = canvas.style.width;
         ppCanvas.style.height = canvas.style.height;
     }
+    // PixiJS effects canvas sizing
+    const pixiCanvas = document.getElementById('pixiEffectsCanvas');
+    if (pixiCanvas) {
+        pixiCanvas.style.width  = canvas.style.width;
+        pixiCanvas.style.height = canvas.style.height;
+    }
 }
 
 function resizeBattleCanvases() {
@@ -544,6 +550,17 @@ function render() {
         }
     }
 
+    // PixiJS effects layer (non-battle mode)
+    if (gameMode !== 'battle' && typeof PixiEffects !== 'undefined' && PixiEffects.isInitialized()) {
+        PixiEffects.setZone(getCurrentZone());
+        PixiEffects.updateBaseTexture(canvas);
+        PixiEffects.renderEnvParticles(envParticles, false, cameraY);
+        PixiEffects.renderEnvParticles(envParticles, true, cameraY);
+        PixiEffects.renderImpactParticles(impactParticles, cameraY);
+        PixiEffects.renderLights(lightSources);
+        PixiEffects.render();
+    }
+
     // Battle mode: render split screen
     if (gameMode === 'battle') {
         if (LocalBattle.isActive()) {
@@ -744,6 +761,24 @@ window.addEventListener('load', () => {
             ppCanvas.width = gameCanvas.width;
             ppCanvas.height = gameCanvas.height;
             postProcessor.init(gameCanvas, ppCanvas);
+        }
+    }
+
+    // PixiJS Effects Layer init (non-battle mode canvas)
+    if (typeof PixiEffects !== 'undefined') {
+        const pixiCanvas = document.createElement('canvas');
+        pixiCanvas.id = 'pixiEffectsCanvas';
+        pixiCanvas.width = CANVAS_LOGICAL_W;
+        pixiCanvas.height = CANVAS_LOGICAL_H;
+        pixiCanvas.style.position = 'absolute';
+        pixiCanvas.style.top = '0';
+        pixiCanvas.style.left = '0';
+        pixiCanvas.style.pointerEvents = 'none';
+        // Insert after postProcessCanvas (or gameCanvas)
+        const normalContainer = document.getElementById('game-container');
+        if (normalContainer) {
+            normalContainer.appendChild(pixiCanvas);
+            PixiEffects.init(pixiCanvas);
         }
     }
 
